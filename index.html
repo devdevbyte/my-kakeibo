@@ -13,14 +13,14 @@
   <meta name="theme-color" content="#0f766e">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="apple-touch-icon" href="https://placehold.co/192x192/0f766e/ffffff?text=家計簿">
+  <link rel="apple-touch-icon" href="[https://placehold.co/192x192/0f766e/ffffff?text=家計簿](https://placehold.co/192x192/0f766e/ffffff?text=家計簿)">
 
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
   <!-- FontAwesome 6 Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
   <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
 
   <style>
     body {
@@ -1337,14 +1337,16 @@
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingBudget: 0 },
+            thinkingConfig: { thinkingLevel: "low" },
             maxOutputTokens: 60
           }
         };
 
-        const res = await callGeminiAPI(apiKey, payload);
+        const { res } = await callGeminiAPIWithFallback(apiKey, payload);
         const json = await res.json();
-        const parsed = JSON.parse(json.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+        let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        rawText = cleanJsonText(rawText);
+        const parsed = JSON.parse(rawText);
         if (parsed.storeName) {
           document.getElementById("form-store").value = parsed.storeName;
           showToast(`「${parsed.storeName}」を特定しました！`);
@@ -1435,7 +1437,7 @@
     }
 
     // ==========================================
-    // ★ 極小トークン出力版：大量品目でも超高速
+    // ★ 構文エラー徹底耐性＋超高速レシート解析
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1467,10 +1469,9 @@
 
         const availableCats = categories.expense.map(c => c.id).join(", ");
         
-        // トークン数を60%削減する「配列の配列」形式の指示
         const promptText = `
 レシート画像から品目を抽出し、文字数を最小限に抑えた以下の極小JSONフォーマットのみを出力してください。
-思考プロセス、検算、マークダウン等は一切不要です。
+思考プロセスや解説、マークダウン記法(バッククォート)は一切含めず、純粋なJSONテキストだけを返してください。
 
 {"s":"店名","p":"電話番号","d":"YYYY-MM-DD","t":合計金額,"i":[["品名",金額,"カテゴリID"]]}
 
@@ -1490,12 +1491,13 @@
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingBudget: 0 }
+            thinkingConfig: { thinkingLevel: "low" }
           }
         };
 
         const t2 = performance.now();
-        const res = await callGeminiAPI(apiKey, payload);
+        // 6秒を出した爆速モデル gemini-3.1-flash-lite を優先
+        const { res, usedModel } = await callGeminiAPIWithFallback(apiKey, payload);
         const t3 = performance.now();
         const netSec = ((t3 - t2) / 1000).toFixed(1);
 
@@ -1503,26 +1505,34 @@
         const usage = json.usageMetadata || {};
         const thoughtTokens = usage.thoughtsTokenCount || 0;
         const outTokens = usage.candidatesTokenCount || 0;
-        const diagText = `[診断] 通信:${netSec}秒 | 出力トークン:${outTokens} (短縮済) | 画像:${kbSize}KB`;
+        const diagText = `[診断] モデル:${usedModel} | 通信:${netSec}秒 | 出力:${outTokens} | 画像:${kbSize}KB`;
 
-        const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        
+        // マークダウンのコードブロック除去とJSON部分の切り抜き
+        rawText = cleanJsonText(rawText);
         const parsed = JSON.parse(rawText);
 
-        // 短縮JSONを従来の標準フォーマットへ瞬時に展開復元
-        const items = Array.isArray(parsed.i) 
-          ? parsed.i.map(item => {
-              if (Array.isArray(item)) {
-                return { name: String(item[0] || "品目"), price: parseInt(item[1], 10) || 0, categoryId: item[2] || "food" };
-              }
-              return item;
-            })
-          : (parsed.items || []);
+        // 短縮JSONの展開（配列形式とオブジェクト形式の両対応）
+        let items = [];
+        if (Array.isArray(parsed.i)) {
+          items = parsed.i.map(item => {
+            if (Array.isArray(item)) {
+              return { name: String(item[0] || "品目"), price: parseInt(item[1], 10) || 0, categoryId: item[2] || "food" };
+            } else if (typeof item === 'object' && item !== null) {
+              return { name: item.name || "品目", price: item.price || 0, categoryId: item.categoryId || "food" };
+            }
+            return { name: "品目", price: 0, categoryId: "food" };
+          });
+        } else if (Array.isArray(parsed.items)) {
+          items = parsed.items;
+        }
 
         const standardized = {
           store: parsed.s || parsed.store || "不明",
           phone: parsed.p || parsed.phone || "",
           date: parsed.d || parsed.date || getTodayISO(),
-          total_amount: parsed.t || parsed.total_amount || 0,
+          total_amount: parseInt(parsed.t || parsed.total_amount || 0, 10),
           items: items
         };
 
@@ -1543,24 +1553,48 @@
       }
     }
 
-    // gemini-3.8-flash 専用直結APIコール（無駄なフォールバック判定を排除）
-    async function callGeminiAPI(apiKey, payload) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.status === 429) throw new Error("RATE_LIMIT");
-      if (!response.ok) {
-        const errBody = await response.text();
-        throw new Error(`APIエラー [HTTP ${response.status}]: ${errBody}`);
+    // AIの出力からマークダウン枠（```json ... ```）や前後の余計な文字を完全除去する関数
+    function cleanJsonText(text) {
+      if (!text) return "{}";
+      let cleaned = text.trim();
+      cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "");
+      const firstBrace = cleaned.indexOf("{");
+      const lastBrace = cleaned.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleaned = cleaned.slice(firstBrace, lastBrace + 1);
       }
-      return response;
+      return cleaned;
+    }
+
+    // OCR最速モデル（3.1 Flash-Lite）→ 安定モデル（3.8 Flash）の自動選択通信
+    async function callGeminiAPIWithFallback(apiKey, payload) {
+      const models = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
+      let lastError = null;
+
+      for (const m of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": apiKey
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.status === 429) throw new Error("RATE_LIMIT");
+          if (response.ok) {
+            return { res: response, usedModel: m };
+          }
+          const errBody = await response.text();
+          lastError = new Error(`[${m}] HTTP ${response.status}: ${errBody}`);
+        } catch (e) {
+          if (e.message === "RATE_LIMIT") throw e;
+          lastError = e;
+        }
+      }
+      throw lastError || new Error("API通信に失敗しました");
     }
 
     function compressReceiptImage(file, targetShortSide = 900) {
