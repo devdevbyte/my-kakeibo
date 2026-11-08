@@ -569,7 +569,6 @@
             <i class="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
-        <!-- 診断結果バッジ -->
         <div id="scan-diag-badge" class="text-[10px] font-mono bg-teal-50 text-teal-800 px-2.5 py-1.5 rounded-lg border border-teal-200"></div>
         <div class="overflow-y-auto space-y-3 flex-1 pr-1 text-xs">
           <div class="bg-slate-50 p-3 rounded-xl space-y-1.5">
@@ -1306,7 +1305,6 @@
       return total;
     }
 
-    // 店舗検索（超軽量・高速）
     async function searchStore() {
       const q = document.getElementById("form-store").value.trim();
       if (!q) {
@@ -1333,13 +1331,13 @@
 
       setAiLoading(true, "店舗情報を検索中...", `「${q}」を照会しています`);
       try {
-        const promptText = `電話番号または店名「${q}」から正式店舗名を1つだけ判定し、以下のJSONのみで即答してください。\n{"storeName": "正式店舗名"}`;
+        const promptText = `電話番号または店名「${q}」から正式店舗名を判定し、JSONのみで返してください。\n{"storeName": "正式店舗名"}`;
         const payload = {
           contents: [{ parts: [{ text: promptText }] }],
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingLevel: "low" },
+            thinkingConfig: { thinkingBudget: 0 },
             maxOutputTokens: 60
           }
         };
@@ -1437,7 +1435,7 @@
     }
 
     // ==========================================
-    // ★ 爆速レシート撮影 & 解析（gemini-3.1-flash-lite / thinkingLevel: low）
+    // ★ 極小トークン出力版：大量品目でも超高速
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1455,7 +1453,6 @@
       setAiLoading(true, "① 画像を最適化中...", "文字を鮮明にリサイズしています");
 
       try {
-        // 短辺900px基準で文字を鮮明化
         const base64Data = await compressReceiptImage(file, 900);
         const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
         const t1 = performance.now();
@@ -1466,17 +1463,20 @@
         document.getElementById("attached-image-preview-box").classList.remove("hidden");
 
         document.getElementById("ai-loading-title").textContent = "② Google AIへ通信中...";
-        document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>AIからの即時応答を待っています`;
+        document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>文字出力ストリームを待機中`;
 
-        const availableCats = categories.expense.map(c => `${c.id}:${c.name}`).join(", ");
+        const availableCats = categories.expense.map(c => c.id).join(", ");
+        
+        // トークン数を60%削減する「配列の配列」形式の指示
         const promptText = `
-レシート画像から文字を読み取り、以下のJSONのみを即座に出力してください。
-【厳守ルール】
-1. 消費税の計算や、品目の合計と支払合計が一致するかの検算・逆算は絶対に行わないでください。
-2. 読めない文字や曖昧な箇所は見えた文字だけをそのまま出力してください。
-3. カテゴリIDは [${availableCats}] から選定してください（医薬品はmedical、食品はfood、日用品はdaily）。日付不明時は "${getTodayISO()}"。
+レシート画像から品目を抽出し、文字数を最小限に抑えた以下の極小JSONフォーマットのみを出力してください。
+思考プロセス、検算、マークダウン等は一切不要です。
 
-{"store":"店名","phone":"電話番号","date":"YYYY-MM-DD","total_amount":0,"items":[{"name":"品名","price":0,"categoryId":"food"}]}
+{"s":"店名","p":"電話番号","d":"YYYY-MM-DD","t":合計金額,"i":[["品名",金額,"カテゴリID"]]}
+
+- カテゴリID候補: [${availableCats}] (医薬品はmedical、食品はfood、日用品はdaily)
+- 品名は略称で短くし、余計な記号やコードは省いてください。
+- 日付不明時は "${getTodayISO()}"。
         `.trim();
 
         const payload = {
@@ -1490,13 +1490,12 @@
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingLevel: "low" } // 新仕様の思考最小化パラメータ
+            thinkingConfig: { thinkingBudget: 0 }
           }
         };
 
         const t2 = performance.now();
-        // 超高速モデル gemini-3.1-flash-lite を優先し、必要なら 3.8-flash へ自動連携
-        const { res, usedModel } = await callGeminiAPIWithFallback(apiKey, payload);
+        const res = await callGeminiAPI(apiKey, payload);
         const t3 = performance.now();
         const netSec = ((t3 - t2) / 1000).toFixed(1);
 
@@ -1504,13 +1503,31 @@
         const usage = json.usageMetadata || {};
         const thoughtTokens = usage.thoughtsTokenCount || 0;
         const outTokens = usage.candidatesTokenCount || 0;
-        const diagText = `[診断] モデル:${usedModel} | 通信:${netSec}秒 | 思考:${thoughtTokens} | 出力:${outTokens} | 画像:${kbSize}KB`;
+        const diagText = `[診断] 通信:${netSec}秒 | 出力トークン:${outTokens} (短縮済) | 画像:${kbSize}KB`;
 
         const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         const parsed = JSON.parse(rawText);
 
-        pendingScanResult = parsed;
-        showScannedReceiptModal(parsed, diagText);
+        // 短縮JSONを従来の標準フォーマットへ瞬時に展開復元
+        const items = Array.isArray(parsed.i) 
+          ? parsed.i.map(item => {
+              if (Array.isArray(item)) {
+                return { name: String(item[0] || "品目"), price: parseInt(item[1], 10) || 0, categoryId: item[2] || "food" };
+              }
+              return item;
+            })
+          : (parsed.items || []);
+
+        const standardized = {
+          store: parsed.s || parsed.store || "不明",
+          phone: parsed.p || parsed.phone || "",
+          date: parsed.d || parsed.date || getTodayISO(),
+          total_amount: parsed.t || parsed.total_amount || 0,
+          items: items
+        };
+
+        pendingScanResult = standardized;
+        showScannedReceiptModal(standardized, diagText);
 
       } catch (err) {
         console.error(err);
@@ -1526,43 +1543,26 @@
       }
     }
 
-    // OCR最速モデル（3.1 Flash-Lite）→ 安定モデル（3.8 Flash）の自動選択通信
-    async function callGeminiAPIWithFallback(apiKey, payload) {
-      const models = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
-      let lastError = null;
-
-      for (const m of models) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const response = await fetch(url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": apiKey
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (response.status === 429) throw new Error("RATE_LIMIT");
-          if (response.ok) {
-            return { res: response, usedModel: m };
-          }
-          const errBody = await response.text();
-          lastError = new Error(`[${m}] HTTP ${response.status}: ${errBody}`);
-        } catch (e) {
-          if (e.message === "RATE_LIMIT") throw e;
-          lastError = e;
-        }
-      }
-      throw lastError || new Error("API通信に失敗しました");
-    }
-
+    // gemini-3.8-flash 専用直結APIコール（無駄なフォールバック判定を排除）
     async function callGeminiAPI(apiKey, payload) {
-      const { res } = await callGeminiAPIWithFallback(apiKey, payload);
-      return res;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.status === 429) throw new Error("RATE_LIMIT");
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`APIエラー [HTTP ${response.status}]: ${errBody}`);
+      }
+      return response;
     }
 
-    // 短辺900px基準のリサイズ関数
     function compressReceiptImage(file, targetShortSide = 900) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
