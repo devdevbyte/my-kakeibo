@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v2.6</title>
+  <title>家計簿 v2.7</title>
 
   <!-- 検索エンジン除外 -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
@@ -47,7 +47,6 @@
       from { opacity: 1; transform: translateY(0); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* パスワードマネージャーの誤作動を防ぎつつ伏せ字にするスタイル */
     .masked-key {
       -webkit-text-security: disc;
       text-security: disc;
@@ -56,7 +55,6 @@
 </head>
 <body class="bg-slate-100 text-slate-800 flex justify-center min-h-screen">
 
-  <!-- Chromeのパスワード自動保存誤作動を防ぐダミーフィールド -->
   <div style="display:none;" aria-hidden="true">
     <input type="text" name="prevent_autofill" tabindex="-1">
   </div>
@@ -67,7 +65,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v2.6</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v2.7</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -130,7 +128,7 @@
             </div>
             <div>
               <div class="text-xs font-bold">超高速 AI レシート読取</div>
-              <div class="text-[10px] text-teal-100">支払合計と品目・外税差額を自動整合</div>
+              <div class="text-[10px] text-teal-100">支払合計・外税差額・日付を自動補正</div>
             </div>
           </div>
           <input type="file" id="receipt-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
@@ -216,7 +214,7 @@
 
             <div id="split-input-container" class="hidden space-y-3">
               <div class="text-[11px] text-slate-500 bg-teal-50 p-2 rounded-xl border border-teal-100">
-                レシートの支払合計と品目の合計に差がある場合（外税や読み取り漏れ）、差額調整行が自動追加されます。
+                支払合計と品目合計に差がある場合（外税や読み取り漏れ）、差額調整行が自動追加されます。
               </div>
               <div id="split-items-list" class="space-y-2"></div>
               <div class="flex justify-between items-center pt-1">
@@ -249,13 +247,17 @@
 
       <!-- 2. 履歴 タブ -->
       <section id="tab-history" class="p-4 space-y-4 hidden fade-in">
-        <div class="flex items-center justify-between bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-100">
-          <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-          <div class="text-center">
+        <!-- 表示モード切替（月度別 / 全期間すべて表示） -->
+        <div class="flex items-center justify-between bg-white px-3 py-2.5 rounded-2xl shadow-sm border border-slate-100">
+          <button id="hist-prev-btn" onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+          <div class="text-center flex-1 px-2">
             <div id="history-period-title" class="text-sm font-bold text-slate-800"></div>
             <div id="history-period-sub" class="text-[10px] text-slate-400"></div>
           </div>
-          <button onclick="changePeriod(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+          <button id="hist-next-btn" onclick="changePeriod(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 mr-1.5"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+          <button id="hist-all-toggle-btn" onclick="toggleHistoryAllMode()" class="px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0 transition">
+            全期間表示
+          </button>
         </div>
 
         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 space-y-2">
@@ -446,7 +448,6 @@
           <div id="payment-methods-badge-list" class="flex flex-wrap gap-1.5 text-xs"></div>
         </div>
 
-        <!-- ★ パスワードマネージャーが絶対に反応しないAPIキー設定欄 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-key text-teal-600"></i>
@@ -529,7 +530,7 @@
           <div class="bg-slate-50 p-3 rounded-xl space-y-1.5">
             <div class="flex justify-between"><span class="text-slate-400">店名:</span><span id="scan-res-store" class="font-bold text-slate-700"></span></div>
             <div class="flex justify-between"><span class="text-slate-400">電話番号:</span><span id="scan-res-phone" class="font-mono text-slate-600"></span></div>
-            <div class="flex justify-between"><span class="text-slate-400">日付:</span><span id="scan-res-date" class="font-bold text-slate-700"></span></div>
+            <div class="flex justify-between"><span class="text-slate-400">日付(自動補正済):</span><span id="scan-res-date" class="font-bold text-teal-700"></span></div>
             <div class="flex justify-between"><span class="text-slate-400">支払合計金額:</span><span id="scan-res-total" class="font-black text-rose-500 text-sm"></span></div>
           </div>
           <div>
@@ -540,8 +541,14 @@
             <div id="scan-res-items" class="space-y-1 bg-slate-50 p-2 rounded-xl max-h-48 overflow-y-auto"></div>
           </div>
         </div>
-        <div class="pt-2">
-          <button onclick="applyScannedReceiptToForm()" class="w-full py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition">入力フォームに反映する</button>
+        <div class="pt-2 space-y-2">
+          <button onclick="saveScannedReceiptDirectly()" class="w-full py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-check-double"></i>
+            <span>このまま即保存する（履歴へ直行）</span>
+          </button>
+          <button onclick="applyScannedReceiptToForm()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+            フォームに反映して手直しする
+          </button>
         </div>
       </div>
     </div>
@@ -752,6 +759,7 @@
     let selectedSimpleCategoryId = "food";
     let attachedImageBase64 = null;
     let pendingScanResult = null;
+    let isHistoryAllMode = false;
 
     let records = [];
     let categories = null;
@@ -774,13 +782,69 @@
     let editCatIcon = ICON_PRESETS[0];
     let editCatColor = COLOR_PRESETS[0].class;
 
-    // 数値の確実なパース関数（カンマや円マークが混入しても必ず整数にする）
     function safeParseInt(val) {
       if (typeof val === "number" && !isNaN(val)) return Math.round(val);
       if (!val) return 0;
       const cleaned = String(val).replace(/[^0-9-]/g, "");
       const num = parseInt(cleaned, 10);
       return isNaN(num) ? 0 : num;
+    }
+
+    function getTodayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // ★ レシート日付の完全正規化＆AIの西暦年ズレ（2024/2025年問題）自動補正関数
+    function normalizeReceiptDate(rawStr, fixYearDrift = true) {
+      const today = new Date();
+      const curYear = today.getFullYear();
+      if (!rawStr) return getTodayISO();
+
+      let s = String(rawStr).trim();
+      // 全角数字を半角に変換
+      s = s.replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
+      // 令和表記 (R8.11.8 / 令和8年11月8日 等) の対応
+      const reiwaMatch = s.match(/(?:令和|R|r)\s*(\d{1,2})\D+(\d{1,2})\D+(\d{1,2})/);
+      if (reiwaMatch) {
+        const y = 2018 + parseInt(reiwaMatch[1], 10);
+        const m = parseInt(reiwaMatch[2], 10);
+        const d = parseInt(reiwaMatch[3], 10);
+        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+
+      const nums = s.match(/\d+/g);
+      if (!nums || nums.length < 2) return getTodayISO();
+
+      let y, m, d;
+      if (nums.length >= 3) {
+        y = parseInt(nums[0], 10);
+        m = parseInt(nums[1], 10);
+        d = parseInt(nums[2], 10);
+        if (y < 100) y += 2000;
+      } else {
+        y = curYear;
+        m = parseInt(nums[0], 10);
+        d = parseInt(nums[1], 10);
+      }
+
+      // AIが年記載なしレシートを学習時期(2023〜2025年)で出力してしまった場合、今年(2026年)へ補正
+      if (fixYearDrift && y >= 2020 && y < curYear) {
+        y = curYear;
+      }
+
+      if (m < 1 || m > 12) m = today.getMonth() + 1;
+      const maxD = new Date(y, m, 0).getDate();
+      if (d < 1 || d > maxD) d = today.getDate();
+
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+
+    // 文字列日付からローカル時刻のDateオブジェクトを安全に生成
+    function parseLocalDate(dateStr) {
+      const norm = normalizeReceiptDate(dateStr, false);
+      const parts = norm.split("-");
+      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 12, 0, 0);
     }
 
     const DB_NAME = "KakeiboPhotoDB";
@@ -843,6 +907,27 @@
         fixedExpenses = JSON.parse(localStorage.getItem("kakeibo_fixed_expenses") || "[]");
         const cfg = JSON.parse(localStorage.getItem("kakeibo_config") || "{}");
         appConfig = Object.assign(appConfig, cfg);
+
+        // ★ 過去に保存されて年ズレ・書式エラーで消えていたレシート記録を自動修復
+        let repaired = false;
+        records.forEach(r => {
+          const isZaim = String(r.id || "").startsWith("zaim_");
+          const fixedDate = normalizeReceiptDate(r.date, !isZaim);
+          if (r.date !== fixedDate) {
+            r.date = fixedDate;
+            repaired = true;
+          }
+          const numTotal = safeParseInt(r.totalAmount);
+          if (numTotal <= 0 && Array.isArray(r.items) && r.items.length > 0) {
+            r.totalAmount = r.items.reduce((acc, it) => acc + safeParseInt(it.price), 0);
+            repaired = true;
+          } else {
+            r.totalAmount = numTotal;
+          }
+        });
+        if (repaired) {
+          localStorage.setItem("kakeibo_records", JSON.stringify(records));
+        }
       } catch (e) {
         console.error("ストレージ読込エラー", e);
       }
@@ -866,11 +951,6 @@
     function initFormDefaults() {
       document.getElementById("form-date").value = getTodayISO();
       setSplitMode(false);
-    }
-
-    function getTodayISO() {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     function getVernalEquinoxDay(year) {
@@ -1098,7 +1178,7 @@
       let spent = 0;
       records.forEach(r => {
         if (!r.date) return;
-        const rDate = new Date(r.date + "T00:00:00");
+        const rDate = parseLocalDate(r.date);
         if (rDate >= cycle.startDate && rDate <= cycle.endDate) {
           if (r.type === "expense" && (r.inclusionScope || "always") === "always") {
             spent += safeParseInt(r.totalAmount);
@@ -1167,7 +1247,6 @@
         splitBtn.className = "px-2.5 py-1 rounded-md text-slate-500";
         simpleBox.classList.remove("hidden");
         splitBox.classList.add("hidden");
-        // スプリットから合計のみに切り替えた際も金額を引き継ぐ
         const splitSum = calcSplitTotal();
         if (splitSum > 0 && !document.getElementById("simple-amount").value) {
           document.getElementById("simple-amount").value = splitSum;
@@ -1328,8 +1407,10 @@
       }
     }
 
+    // ★ 確実な保存と履歴への即時同期
     async function saveRecord() {
-      const date = document.getElementById("form-date").value || getTodayISO();
+      const rawDate = document.getElementById("form-date").value || getTodayISO();
+      const date = normalizeReceiptDate(rawDate, false);
       const store = document.getElementById("form-store").value.trim() || (inputType === "expense" ? "お買い物" : "収入");
       const paymentMethod = document.getElementById("form-payment-method").value || "cash";
       const tags = document.getElementById("form-tags").value.split(/\s+/).filter(t => t.startsWith("#"));
@@ -1356,7 +1437,6 @@
             totalAmount += price;
           }
         });
-        // 万一スプリット行が空でも、単一金額またはレシート合計があれば救済して保存する
         if (totalAmount <= 0) {
           const fallbackAmt = safeParseInt(document.getElementById("simple-amount").value) || safeParseInt(pendingScanResult?.total_amount);
           if (fallbackAmt > 0) {
@@ -1394,21 +1474,34 @@
       records.unshift(newRecord);
       saveAllStorage();
 
+      // 保存した明細の日付に履歴の表示期間を自動同期する
+      viewingDate = parseLocalDate(date);
+
       document.getElementById("simple-amount").value = "";
       document.getElementById("form-store").value = "";
       document.getElementById("form-tags").value = "";
+      document.getElementById("form-date").value = getTodayISO();
       removeAttachedImage();
       pendingScanResult = null;
       document.getElementById("split-items-list").innerHTML = "";
       setSplitMode(false);
       setInclusionScope("always");
 
-      showToast(`¥${totalAmount.toLocaleString()} を家計簿に保存しました！`);
       renderDashboard();
+      renderHistoryList();
+      showToast(`¥${totalAmount.toLocaleString()} を保存しました！（履歴に反映済）`);
+    }
+
+    // ★ モーダルから1タップで即座に保存して履歴タブへ移動する関数
+    async function saveScannedReceiptDirectly() {
+      if (!pendingScanResult) return;
+      applyScannedReceiptToForm();
+      await saveRecord();
+      switchTab("history");
     }
 
     // ==========================================
-    // ★ レシート解析（支払合計優先＋外税・差額の自動補填）
+    // レシート解析（日付正規化＋支払合計優先＋差額自動調整）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1426,7 +1519,6 @@
       setAiLoading(true, "① 画像を最適化中...", "文字を鮮明にリサイズしています");
 
       try {
-        // 文字認識の精度を高めるため短辺1024px・画質0.82に設定
         const base64Data = await compressReceiptImage(file, 1024);
         const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
         const t1 = performance.now();
@@ -1440,13 +1532,15 @@
         document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>AIからの即時応答を待っています`;
 
         const availableCats = categories.expense.map(c => c.id).join(", ");
+        const curYear = new Date().getFullYear();
         
         const promptText = `
 レシート画像から文字を正確に読み取り、以下の短縮JSONのみを出力してください。
+- 現在は西暦${curYear}年です。日付の年が省略されている場合や2桁表記の場合は${curYear}年として "YYYY-MM-DD" 形式で出力してください。
 - "t" にはレシート記載の最終的な支払合計金額（税込合計）の整数を入れてください。
 - "i" にはレシートに印字されているすべての購入品目・値引きを省略せず配列で入れてください。
 
-{"s":"店名","p":"電話番号","d":"YYYY-MM-DD","t":0,"i":[["品名",0,"food"]]}
+{"s":"店名","p":"電話番号","d":"${getTodayISO()}","t":0,"i":[["品名",0,"food"]]}
 
 利用可能カテゴリID: [${availableCats}] (医薬品はmedical、食品はfood、日用品はdaily)。日付不明時は "${getTodayISO()}"。
         `.trim();
@@ -1498,7 +1592,6 @@
           })).filter(it => it.price !== 0);
         }
 
-        // レシート記載の支払合計金額を取得
         let receiptTotal = safeParseInt(parsed.t !== undefined ? parsed.t : parsed.total_amount);
         const itemsSum = items.reduce((acc, cur) => acc + cur.price, 0);
 
@@ -1506,7 +1599,6 @@
           receiptTotal = itemsSum;
         }
 
-        // ★ 支払合計（例:1600円）と品目合計（例:1400円）にズレがある場合、支払合計を優先して差額調整行を自動追加
         if (receiptTotal > 0 && items.length > 0 && receiptTotal !== itemsSum) {
           const diff = receiptTotal - itemsSum;
           const mainCat = items[0]?.categoryId || "food";
@@ -1524,10 +1616,13 @@
           });
         }
 
+        // 日付の年ズレ・書式を完全正規化
+        const normalizedDate = normalizeReceiptDate(parsed.d || parsed.date, true);
+
         const standardized = {
           store: parsed.s || parsed.store || "不明",
           phone: parsed.p || parsed.phone || "",
-          date: parsed.d || parsed.date || getTodayISO(),
+          date: normalizedDate,
           total_amount: receiptTotal,
           items: items
         };
@@ -1663,11 +1758,11 @@
       closeModal("receipt-scan-modal");
 
       setInputType("expense");
-      document.getElementById("form-date").value = pendingScanResult.date || getTodayISO();
+      const normDate = normalizeReceiptDate(pendingScanResult.date, true);
+      document.getElementById("form-date").value = normDate;
       document.getElementById("form-store").value = pendingScanResult.store || "";
 
       const totalAmt = safeParseInt(pendingScanResult.total_amount);
-      // 「合計のみ」モードの入力欄にも必ず支払合計金額をセット
       document.getElementById("simple-amount").value = totalAmt > 0 ? totalAmt : "";
 
       setSplitMode(true);
@@ -1681,13 +1776,32 @@
       } else {
         addSplitItemRow("合計", totalAmt, "food");
       }
-      showToast(`支払合計 ¥${totalAmt.toLocaleString()} をフォームに反映しました！`);
+      showToast(`支払合計 ¥${totalAmt.toLocaleString()} をフォームに反映しました`);
     }
 
     function removeAttachedImage() {
       attachedImageBase64 = null;
       document.getElementById("attached-image-thumb").src = "";
       document.getElementById("attached-image-preview-box").classList.add("hidden");
+    }
+
+    function toggleHistoryAllMode() {
+      isHistoryAllMode = !isHistoryAllMode;
+      const btn = document.getElementById("hist-all-toggle-btn");
+      const prevBtn = document.getElementById("hist-prev-btn");
+      const nextBtn = document.getElementById("hist-next-btn");
+      if (isHistoryAllMode) {
+        btn.className = "px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-teal-700 text-white border border-teal-700 shrink-0 transition";
+        btn.textContent = "月度別に戻す";
+        prevBtn.classList.add("opacity-30", "pointer-events-none");
+        nextBtn.classList.add("opacity-30", "pointer-events-none");
+      } else {
+        btn.className = "px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0 transition";
+        btn.textContent = "全期間表示";
+        prevBtn.classList.remove("opacity-30", "pointer-events-none");
+        nextBtn.classList.remove("opacity-30", "pointer-events-none");
+      }
+      renderHistoryList();
     }
 
     function changePeriod(delta) {
@@ -1702,16 +1816,23 @@
 
     function renderHistoryList() {
       const cycle = getCycleRange(viewingDate, appConfig);
-      document.getElementById("history-period-title").textContent = cycle.label;
-      document.getElementById("history-period-sub").textContent = cycle.sub;
+      if (isHistoryAllMode) {
+        document.getElementById("history-period-title").textContent = `全期間 (${records.length}件)`;
+        document.getElementById("history-period-sub").textContent = "保存されているすべての明細";
+      } else {
+        document.getElementById("history-period-title").textContent = cycle.label;
+        document.getElementById("history-period-sub").textContent = cycle.sub;
+      }
 
       const pFilter = document.getElementById("hist-filter-payment").value;
       const tFilter = document.getElementById("hist-filter-tag").value;
 
       const filtered = records.filter(r => {
         if (!r.date) return false;
-        const rDate = new Date(r.date + "T00:00:00");
-        if (rDate < cycle.startDate || rDate > cycle.endDate) return false;
+        if (!isHistoryAllMode) {
+          const rDate = parseLocalDate(r.date);
+          if (rDate < cycle.startDate || rDate > cycle.endDate) return false;
+        }
         if (pFilter !== "all" && r.paymentMethod !== pFilter) return false;
         if (tFilter !== "all" && !(r.tags || []).includes(tFilter)) return false;
         return true;
@@ -1745,27 +1866,31 @@
       container.innerHTML = "";
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-400 py-12 text-center">この期間の明細はありません</div>`;
+        const extraHint = (!isHistoryAllMode && records.length > 0)
+          ? `<div class="mt-2"><button onclick="toggleHistoryAllMode()" class="text-teal-700 underline font-bold text-xs">他の期間に ${records.length} 件の明細があります（全期間を表示する）</button></div>`
+          : "";
+        container.innerHTML = `<div class="text-xs text-slate-400 py-10 text-center">この期間の明細はありません${extraHint}</div>`;
         return;
       }
 
       const grouped = {};
       filtered.forEach(r => {
-        if (!grouped[r.date]) grouped[r.date] = [];
-        grouped[r.date].push(r);
+        const normD = normalizeReceiptDate(r.date, false);
+        if (!grouped[normD]) grouped[normD] = [];
+        grouped[normD].push(r);
       });
 
       Object.keys(grouped).sort((a, b) => b.localeCompare(a)).forEach(dateStr => {
         const groupCard = document.createElement("div");
         groupCard.className = "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden";
 
-        const d = new Date(dateStr + "T00:00:00");
+        const d = parseLocalDate(dateStr);
         const days = ["日", "月", "火", "水", "木", "金", "土"];
         const dayOfWeek = days[d.getDay()];
 
         const header = document.createElement("div");
         header.className = "px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center text-[11px] font-bold text-slate-500";
-        header.innerHTML = `<span>${dateStr.slice(5).replace('-', '/')} (${dayOfWeek})</span>`;
+        header.innerHTML = `<span>${dateStr.replace(/-/g, '/')} (${dayOfWeek})</span>`;
         groupCard.appendChild(header);
 
         const list = document.createElement("div");
@@ -1927,7 +2052,7 @@
 
       records.forEach(r => {
         if (!r.date || r.type !== "expense") return;
-        const rDate = new Date(r.date + "T00:00:00");
+        const rDate = parseLocalDate(r.date);
         if (rDate < cycle.startDate || rDate > cycle.endDate) return;
         if ((r.inclusionScope || "always") !== "always") return;
 
@@ -1949,11 +2074,12 @@
       const monthlyInc = new Array(12).fill(0);
 
       records.forEach(r => {
-        if (!r.date || !r.date.startsWith(`${year}-`)) return;
+        const normD = normalizeReceiptDate(r.date, false);
+        if (!normD.startsWith(`${year}-`)) return;
         const sc = r.inclusionScope || "always";
         if (sc === "excluded") return;
 
-        const mIdx = parseInt(r.date.slice(5, 7), 10) - 1;
+        const mIdx = parseInt(normD.slice(5, 7), 10) - 1;
         const amt = safeParseInt(r.totalAmount);
         if (r.type === "expense") {
           monthlyExp[mIdx] += amt;
@@ -2066,11 +2192,12 @@
       currentYearMedicalItems = [];
       let totalMed = 0;
       records.forEach(r => {
-        if (!r.date || !r.date.startsWith(`${year}-`)) return;
+        const normD = normalizeReceiptDate(r.date, false);
+        if (!normD.startsWith(`${year}-`)) return;
         (r.items || []).forEach(it => {
           if (it.categoryId === "medical") {
             const p = safeParseInt(it.price);
-            currentYearMedicalItems.push({ date: r.date, store: r.store, name: it.name, price: p });
+            currentYearMedicalItems.push({ date: normD, store: r.store, name: it.name, price: p });
             totalMed += p;
           }
         });
@@ -2179,12 +2306,7 @@
           const row = rows[i];
           if (!row || row.length <= dateIdx || !row[dateIdx].trim()) continue;
 
-          let rawDate = row[dateIdx].trim().replace(/\//g, "-");
-          if (/^\d{4}-\d{1,2}-\d{1,2}/.test(rawDate)) {
-            const parts = rawDate.split("-");
-            rawDate = `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
-          }
-
+          const rawDate = normalizeReceiptDate(row[dateIdx], false);
           const rawMethod = methodIdx !== -1 ? (row[methodIdx] || "").trim() : "";
           const expVal = expIdx !== -1 ? safeParseInt(row[expIdx]) : 0;
           const incVal = incIdx !== -1 ? safeParseInt(row[incIdx]) : 0;
@@ -2486,7 +2608,7 @@
     }
 
     function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "2.6", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      const full = { app: "KakeiboPWA", version: "2.7", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
       downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
       showToast("完全バックアップJSONを出力しました");
     }
