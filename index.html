@@ -1364,7 +1364,7 @@
     }
 
     // ==========================================
-    // レシート解析（6秒実績の 3.1-flash-lite / 3.8-flash 連携）
+    // レシート解析（6秒実績の gemini-3.1-flash-lite 固定）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1398,7 +1398,7 @@
         
         const promptText = `
 レシート画像から文字を読み取り、以下のJSONのみを即座に出力してください。
-思考プロセスや検算、マークダウン枠は不要です。
+思考プロセスや検算、マークダウン記法(バッククォート)は一切含めず、純粋なJSONテキストだけを返してください。
 
 {"store":"店名","phone":"電話番号","date":"YYYY-MM-DD","total_amount":0,"items":[{"name":"品名","price":0,"categoryId":"food"}]}
 
@@ -1421,12 +1421,12 @@
         };
 
         const t2 = performance.now();
-        const { res, usedModel } = await callGeminiAPI(apiKey, payload);
+        const res = await callGeminiAPI(apiKey, payload);
         const t3 = performance.now();
         const netSec = ((t3 - t2) / 1000).toFixed(1);
 
         const json = await res.json();
-        const diagText = `[診断] モデル:${usedModel} | 通信:${netSec}秒 | 画像:${kbSize}KB`;
+        const diagText = `[診断] 通信:${netSec}秒 | 画像:${kbSize}KB`;
 
         let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         rawText = cleanJsonText(rawText);
@@ -1461,35 +1461,24 @@
       return cleaned;
     }
 
-    // Google API 直接通信関数（405防止：絶対URL固定）
+    // 6秒実績の gemini-3.1-flash-lite に完全固定
     async function callGeminiAPI(apiKey, payload) {
-      const models = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
-      let lastErr = null;
+      const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=$){encodeURIComponent(apiKey)}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        body: JSON.stringify(payload)
+      });
 
-      for (const m of models) {
-        try {
-          const endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/)" + m + ":generateContent?key=" + encodeURIComponent(apiKey);
-          const response = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": apiKey
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (response.status === 429) throw new Error("RATE_LIMIT");
-          if (response.ok) {
-            return { res: response, usedModel: m };
-          }
-          const errBody = await response.text();
-          lastErr = new Error(`[${m}] HTTP ${response.status}: ${errBody}`);
-        } catch (e) {
-          if (e.message === "RATE_LIMIT") throw e;
-          lastErr = e;
-        }
+      if (response.status === 429) throw new Error("RATE_LIMIT");
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`[gemini-3.1-flash-lite] HTTP ${response.status}: ${errBody}`);
       }
-      throw lastErr || new Error("Google APIへの通信に失敗しました");
+      return response;
     }
 
     function compressReceiptImage(file, targetShortSide = 900) {
