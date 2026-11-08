@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v2.8</title>
+  <title>家計簿 v3.0</title>
 
-  <!-- 検索エンジン除外 -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
 
-  <!-- PWA設定 -->
   <meta name="theme-color" content="#0f766e">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -33,24 +31,11 @@
       user-select: none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    .hide-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    .fade-in {
-      animation: fadeIn 0.18s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .masked-key {
-      -webkit-text-security: disc;
-      text-security: disc;
-    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .fade-in { animation: fadeIn 0.18s ease-out; }
+    @keyframes fadeIn { from { opacity: 1; transform: translateY(0); } to { opacity: 1; transform: translateY(0); } }
+    .masked-key { -webkit-text-security: disc; text-security: disc; }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 flex justify-center min-h-screen">
@@ -65,7 +50,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v2.8</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.0</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -77,7 +62,6 @@
 
       <!-- 1. ダッシュボード・入力 タブ -->
       <section id="tab-input" class="p-4 space-y-4 fade-in">
-        <!-- 予算カード -->
         <div id="dash-budget-card" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
@@ -117,7 +101,6 @@
           </div>
         </div>
 
-        <!-- ★ 編集モード中に表示される通知バナー -->
         <div id="edit-mode-banner" class="hidden bg-amber-500 text-white p-3.5 rounded-2xl shadow-md flex items-center justify-between">
           <div class="flex items-center space-x-2.5">
             <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0">
@@ -145,7 +128,7 @@
             </div>
             <div>
               <div class="text-xs font-bold">超高速 AI レシート読取</div>
-              <div class="text-[10px] text-teal-100">支払合計・外税差額・日付を自動補正</div>
+              <div class="text-[10px] text-teal-100">品目・大項目・中項目を一括自動判定</div>
             </div>
           </div>
           <input type="file" id="receipt-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
@@ -195,10 +178,9 @@
             </div>
           </div>
 
-          <!-- タグ & メモ入力 -->
           <div class="space-y-2.5">
             <div>
-              <label class="text-[10px] font-bold text-slate-400 block mb-1">タグ (スペース区切りで複数可・#は自動付与)</label>
+              <label class="text-[10px] font-bold text-slate-400 block mb-1">タグ (スペース区切りで複数可)</label>
               <input type="text" id="form-tags" autocomplete="off" placeholder="#旅行 #まとめ買い" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 mb-1.5">
               <div class="flex flex-wrap gap-1">
                 <button type="button" onclick="addTagToInput('#旅行')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#旅行</button>
@@ -206,24 +188,24 @@
                 <button type="button" onclick="addTagToInput('#イベント')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#イベント</button>
                 <button type="button" onclick="addTagToInput('#日用品')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#日用品</button>
                 <button type="button" onclick="addTagToInput('#医療費')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#医療費</button>
-                <button type="button" onclick="addTagToInput('#特別費')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#特別費</button>
               </div>
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">一言メモ (任意)</label>
-              <input type="text" id="form-memo" autocomplete="off" placeholder="例: 家族との夕食、ポイント利用など" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
+              <input type="text" id="form-memo" autocomplete="off" placeholder="例: 家族との夕食など" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
             </div>
           </div>
 
           <div class="pt-2 border-t border-slate-100">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-slate-700">明細・品目設定</span>
+              <span class="text-xs font-bold text-slate-700">明細・カテゴリ設定</span>
               <div class="flex items-center space-x-1 p-0.5 bg-slate-100 rounded-lg text-[11px] font-bold">
                 <button type="button" id="split-mode-simple" onclick="setSplitMode(false)" class="px-2.5 py-1 rounded-md bg-white text-teal-700 shadow-xs">合計のみ</button>
                 <button type="button" id="split-mode-split" onclick="setSplitMode(true)" class="px-2.5 py-1 rounded-md text-slate-500">品目別(スプリット)</button>
               </div>
             </div>
 
+            <!-- 単一合計コンテナ（大項目 ＋ 中項目チップス） -->
             <div id="simple-input-container" class="space-y-3">
               <div>
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">金額 (円)</label>
@@ -233,14 +215,22 @@
                 </div>
               </div>
               <div>
-                <label class="text-[10px] font-bold text-slate-400 block mb-1">カテゴリ</label>
+                <label class="text-[10px] font-bold text-slate-400 block mb-1">① 大項目を選択</label>
                 <div id="simple-category-grid" class="grid grid-cols-4 gap-1.5"></div>
+              </div>
+              <div id="simple-subcategory-box" class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1.5">
+                <div class="flex justify-between items-center text-[10px] font-bold text-slate-500">
+                  <span>② 中項目を選択</span>
+                  <span id="simple-subcat-selected-label" class="text-teal-700"></span>
+                </div>
+                <div id="simple-subcategory-chips" class="flex flex-wrap gap-1.5"></div>
               </div>
             </div>
 
+            <!-- 品目別スプリットコンテナ -->
             <div id="split-input-container" class="hidden space-y-3">
               <div class="text-[11px] text-slate-500 bg-teal-50 p-2 rounded-xl border border-teal-100">
-                品目ごとの金額やカテゴリを個別に修正・追加できます。
+                品目ごとに大項目・中項目を細かく分類して記帳できます。
               </div>
               <div id="split-items-list" class="space-y-2"></div>
               <div class="flex justify-between items-center pt-1">
@@ -320,12 +310,11 @@
           </select>
         </div>
 
-        <div class="text-[10px] text-slate-400 text-right px-1">※明細をタップするとタグ付け・内容修正ができます</div>
-
+        <div class="text-[10px] text-slate-400 text-right px-1">※明細をタップすると修正・タグ付けができます</div>
         <div id="history-container" class="space-y-3"></div>
       </section>
 
-      <!-- 3. 分析 タブ -->
+      <!-- 3. 分析 タブ（画像5・6のドリルダウン分析完全再現） -->
       <section id="tab-analytics" class="p-4 space-y-4 hidden fade-in">
         <div class="grid grid-cols-3 gap-1 p-1 bg-slate-200 rounded-xl text-xs font-bold">
           <button id="anl-btn-month" onclick="setAnalyticsSubTab('month')" class="py-1.5 rounded-lg bg-teal-700 text-white shadow-xs">月別</button>
@@ -339,6 +328,7 @@
           <button onclick="changePeriod(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600"><i class="fa-solid fa-chevron-right text-xs"></i></button>
         </div>
 
+        <!-- A. 通常ビュー（大項目全体ビュー） -->
         <div id="anl-standard-view" class="space-y-4">
           <div id="anl-yearly-chart-card" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hidden">
             <div class="text-xs font-bold text-slate-500 mb-2">年間 収支推移 (1月〜12月)</div>
@@ -346,7 +336,7 @@
           </div>
 
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-            <div class="text-xs font-bold text-slate-500 mb-2">カテゴリ別支出割合</div>
+            <div class="text-xs font-bold text-slate-500 mb-2">支出全体 カテゴリ割合</div>
             <div class="relative h-52 flex items-center justify-center">
               <canvas id="categoryChart"></canvas>
               <div id="category-chart-empty" class="hidden absolute text-xs text-slate-400">データがありません</div>
@@ -354,11 +344,46 @@
           </div>
 
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
-            <div class="text-xs font-bold text-slate-500 mb-2">カテゴリ別支出内訳</div>
+            <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-1">
+              <span>大項目別 支出内訳</span>
+              <span class="text-[10px] text-teal-600">タップで中項目へ</span>
+            </div>
             <div id="category-ranking-list" class="space-y-2.5"></div>
           </div>
         </div>
 
+        <!-- ★ B. 中項目ドリルダウンビュー（画像5・6の完全再現） -->
+        <div id="anl-drilldown-view" class="hidden space-y-4">
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+            <div class="flex items-center justify-between">
+              <button type="button" onclick="closeDrilldown()" class="text-xs font-bold text-teal-700 flex items-center space-x-1 py-1 px-2.5 rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-200">
+                <i class="fa-solid fa-arrow-left text-[11px]"></i>
+                <span>全体の集計に戻る</span>
+              </button>
+              <span id="drilldown-cat-badge" class="text-xs font-bold text-slate-700"></span>
+            </div>
+
+            <!-- 中項目の円グラフ -->
+            <div class="relative h-56 flex items-center justify-center">
+              <canvas id="drilldownChart"></canvas>
+              <div id="drilldown-chart-center-box" class="absolute text-center pointer-events-none">
+                <div class="text-[10px] text-slate-400 font-bold">支出</div>
+                <div id="drilldown-chart-center-total" class="text-lg font-black text-slate-800">¥0</div>
+              </div>
+            </div>
+
+            <!-- 大項目全体金額バー -->
+            <div class="pt-2 border-t border-slate-100 flex justify-between items-baseline">
+              <span id="drilldown-cat-full-title" class="font-bold text-slate-800 text-xs"></span>
+              <span id="drilldown-cat-full-amount" class="text-base font-black text-slate-800">¥0</span>
+            </div>
+
+            <!-- 中項目の内訳リスト（画像5・6の ¥0 も含めた一覧表示） -->
+            <div id="drilldown-subcat-list" class="divide-y divide-slate-100 space-y-1"></div>
+          </div>
+        </div>
+
+        <!-- C. 医療費控除ビュー -->
         <div id="anl-medical-view" class="hidden space-y-4">
           <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2">
             <div class="flex items-center space-x-2 text-emerald-800 font-bold text-xs">
@@ -391,16 +416,37 @@
 
       <!-- 4. 設定 タブ -->
       <section id="tab-settings" class="p-4 space-y-4 hidden fade-in">
+        <!-- GASバックアップ -->
+        <div class="bg-gradient-to-br from-teal-800 to-slate-800 text-white p-4 rounded-2xl shadow-md space-y-3 border border-teal-600">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-sm font-black">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div>
+              <div class="text-sm font-black tracking-tight">スプレッドシート自動バックアップ</div>
+              <div class="text-[10px] text-teal-200">Google Apps Script (GAS) 連携</div>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-200 leading-relaxed">
+            発行したGASのWebアプリURLを登録すると、家計簿を保存するたびに裏で自分専用のスプレッドシートへ自動追記されます。
+          </p>
+          <input type="text" id="setting-gas-url" autocomplete="off" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 text-xs bg-slate-900/60 border border-teal-500/50 rounded-xl font-mono text-white placeholder-slate-400">
+          <div class="flex space-x-2">
+            <button type="button" onclick="saveGasUrl()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">URLを保存</button>
+            <button type="button" onclick="testGasConnection()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-teal-200 text-xs font-bold rounded-xl transition">テスト送信</button>
+          </div>
+        </div>
+
         <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-md space-y-3 border border-emerald-500">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-black">Z</div>
             <div>
               <div class="text-sm font-black tracking-tight">Zaim CSVインポート</div>
-              <div class="text-[10px] text-emerald-100">Shift-JIS / UTF-8 両対応・全自動変換</div>
+              <div class="text-[10px] text-emerald-100">大項目・中項目を自動判別して取り込み</div>
             </div>
           </div>
           <p class="text-[11px] text-emerald-50 leading-relaxed">
-            ZaimからダウンロードしたCSVファイルを選択するだけで、過去の日付・店名・品目・金額・カテゴリを一括で取り込みます。
+            ZaimのCSVファイルを選択するだけで、大項目と内訳（中項目）をそのまま維持して過去履歴を取り込みます。
           </p>
           <label class="block w-full py-3 bg-white text-emerald-800 hover:bg-emerald-50 active:scale-[0.98] text-center font-black text-xs rounded-xl shadow cursor-pointer transition flex items-center justify-center space-x-2">
             <i class="fa-solid fa-file-import text-sm text-emerald-600"></i>
@@ -409,6 +455,23 @@
           </label>
         </div>
 
+        <!-- ★ カテゴリ自由編集（大項目・中項目の編集カード） -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
+              <i class="fa-solid fa-tags text-teal-600"></i>
+              <span>大項目・中項目の管理・編集</span>
+            </div>
+            <button onclick="openCategoryManageModal()" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
+              設定を開く
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            大項目（食費、日用品など）の名前や色だけでなく、その配下にある中項目（食料品、カフェ、消耗品、ペットなど）を自由に追加・変更できます。
+          </p>
+        </div>
+
+        <!-- 予算・締め日 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-sliders text-teal-600"></i>
@@ -457,16 +520,6 @@
             <button onclick="openModal('fixed-expense-modal')" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">追加</button>
           </div>
           <div id="fixed-expenses-list" class="space-y-1.5"></div>
-        </div>
-
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
-              <i class="fa-solid fa-tags text-teal-600"></i>
-              <span>カテゴリ自由編集</span>
-            </div>
-            <button onclick="openCategoryManageModal()" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">編集を開く</button>
-          </div>
         </div>
 
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
@@ -579,13 +632,13 @@
             <span>このまま即保存する（履歴へ直行）</span>
           </button>
           <button onclick="applyScannedReceiptToForm()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
-            フォームに反映して手直し・タグ付けする
+            フォームに反映して手直しする
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ★ B. 明細詳細・クイックタグ付け＆フル編集モーダル -->
+    <!-- B. 明細詳細・クイックタグ付け＆フル編集モーダル -->
     <div id="detail-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[88vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -596,7 +649,7 @@
         <div class="pt-2 border-t border-slate-100 space-y-2">
           <button id="detail-modal-edit-btn" class="w-full py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-pen-to-square"></i>
-            <span>すべての項目（金額・品目・日付等）を修正する</span>
+            <span>すべての項目（金額・品目・中項目等）を修正する</span>
           </button>
           <button id="detail-modal-delete-btn" class="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition">
             この明細を削除
@@ -605,31 +658,38 @@
       </div>
     </div>
 
+    <!-- ★ C. カテゴリ管理モーダル（大項目 ＋ 中項目の編集・追加・名称変更対応） -->
     <div id="category-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[88vh]">
         <div class="flex items-center justify-between border-b pb-2">
-          <span class="font-bold text-slate-800 text-sm">カテゴリ編集</span>
+          <div>
+            <span class="font-bold text-slate-800 text-sm">大項目・中項目の編集</span>
+            <div class="text-[10px] text-slate-400">大項目をタップすると中項目を編集できます</div>
+          </div>
           <button onclick="closeModal('category-manage-modal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold">
           <button id="cat-tab-exp" onclick="setCategoryManageTab('expense')" class="py-1.5 rounded-lg bg-white shadow-xs text-teal-800">支出</button>
           <button id="cat-tab-inc" onclick="setCategoryManageTab('income')" class="py-1.5 rounded-lg text-slate-500">収入</button>
         </div>
-        <div id="category-manage-list" class="overflow-y-auto flex-1 space-y-2 pr-1 max-h-60"></div>
-        <button onclick="openCategoryEditForm(null)" class="w-full py-2.5 bg-teal-50 text-teal-700 font-bold text-xs rounded-xl border border-teal-200">+ 新規カテゴリを追加</button>
+        <div id="category-manage-list" class="overflow-y-auto flex-1 space-y-2.5 pr-1 max-h-72"></div>
+        <button onclick="openCategoryEditForm(null)" class="w-full py-2.5 bg-teal-50 text-teal-700 font-bold text-xs rounded-xl border border-teal-200">
+          + 新規大項目を追加
+        </button>
       </div>
     </div>
 
+    <!-- D. 大項目編集モーダル -->
     <div id="category-edit-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
-          <span id="cat-edit-title" class="font-bold text-slate-800">カテゴリの編集</span>
+          <span id="cat-edit-title" class="font-bold text-slate-800">大項目の編集</span>
           <button onclick="closeModal('category-edit-modal')" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <input type="hidden" id="edit-cat-id">
         <div>
-          <label class="font-bold text-slate-400 block mb-1">カテゴリ名</label>
-          <input type="text" id="edit-cat-name" autocomplete="off" placeholder="例: おやつ" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <label class="font-bold text-slate-400 block mb-1">大項目名</label>
+          <input type="text" id="edit-cat-name" autocomplete="off" placeholder="例: 食費、日用品" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-bold">
         </div>
         <div>
           <label class="font-bold text-slate-400 block mb-1">アイコン</label>
@@ -646,6 +706,27 @@
       </div>
     </div>
 
+    <!-- ★ E. 中項目専用の追加・編集モーダル -->
+    <div id="subcat-edit-modal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-xs z-60 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
+        <div class="flex items-center justify-between border-b pb-2">
+          <span id="subcat-edit-title" class="font-bold text-slate-800">中項目の設定</span>
+          <button onclick="closeModal('subcat-edit-modal')" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <input type="hidden" id="edit-subcat-parent-id">
+        <input type="hidden" id="edit-subcat-id">
+        <div>
+          <label class="font-bold text-slate-400 block mb-1">中項目名（サブカテゴリ）</label>
+          <input type="text" id="edit-subcat-name" autocomplete="off" placeholder="例: 消耗品、カフェ、ペット" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold">
+        </div>
+        <div class="flex space-x-2 pt-2">
+          <button onclick="saveSubCategoryEdit()" class="flex-1 py-2 bg-teal-700 text-white font-bold rounded-xl shadow">保存する</button>
+          <button onclick="closeModal('subcat-edit-modal')" class="px-3 py-2 bg-slate-100 text-slate-600 rounded-xl">中止</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- F. 支払い元管理モーダル -->
     <div id="payment-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
         <div class="flex items-center justify-between border-b pb-2">
@@ -660,6 +741,7 @@
       </div>
     </div>
 
+    <!-- G. 固定費追加モーダル -->
     <div id="fixed-expense-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -680,7 +762,7 @@
             <input type="number" id="fixed-day" min="1" max="31" value="25" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
           </div>
           <div>
-            <label class="font-bold text-slate-400 block mb-1">カテゴリ</label>
+            <label class="font-bold text-slate-400 block mb-1">大項目</label>
             <select id="fixed-category" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></select>
           </div>
         </div>
@@ -691,6 +773,7 @@
       </div>
     </div>
 
+    <!-- H. 汎用確認ダイアログ -->
     <div id="confirm-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-60 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl space-y-3 text-center">
         <div id="confirm-icon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
@@ -703,6 +786,7 @@
       </div>
     </div>
 
+    <!-- I. 集計対象フラグの説明モーダル -->
     <div id="inclusion-help-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -744,23 +828,120 @@
   </div>
 
   <script>
+    // ★ 大項目 ＋ 中項目の初期マスター（画像5・6の実用項目を反映）
     const DEFAULT_CATEGORIES = {
       expense: [
-        { id: "food", name: "食費", icon: "fa-utensils", color: "bg-amber-100 text-amber-600" },
-        { id: "daily", name: "日用品", icon: "fa-basket-shopping", color: "bg-emerald-100 text-emerald-600" },
-        { id: "medical", name: "医療費", icon: "fa-briefcase-medical", color: "bg-teal-100 text-teal-600" },
-        { id: "housing", name: "住居・光熱費", icon: "fa-lightbulb", color: "bg-sky-100 text-sky-600" },
-        { id: "transport", name: "交通費", icon: "fa-train-subway", color: "bg-indigo-100 text-indigo-600" },
-        { id: "social", name: "交際費", icon: "fa-mug-saucer", color: "bg-pink-100 text-pink-600" },
-        { id: "entertainment", name: "趣味・娯楽", icon: "fa-gamepad", color: "bg-purple-100 text-purple-600" },
-        { id: "special", name: "特別費", icon: "fa-plane-departure", color: "bg-orange-100 text-orange-600" },
-        { id: "other_exp", name: "その他支出", icon: "fa-box-archive", color: "bg-slate-100 text-slate-600" }
+        {
+          id: "food", name: "食費", icon: "fa-utensils", color: "bg-amber-100 text-amber-600",
+          subCategories: [
+            { id: "food_grocery", name: "食料品" },
+            { id: "food_cafe", name: "カフェ" },
+            { id: "food_breakfast", name: "朝ご飯" },
+            { id: "food_lunch", name: "昼ご飯" },
+            { id: "food_dinner", name: "晩ご飯" },
+            { id: "food_other", name: "その他" }
+          ]
+        },
+        {
+          id: "daily", name: "日用雑貨", icon: "fa-basket-shopping", color: "bg-emerald-100 text-emerald-600",
+          subCategories: [
+            { id: "daily_consumable", name: "消耗品" },
+            { id: "daily_kids", name: "子ども関連" },
+            { id: "daily_pet", name: "ペット" },
+            { id: "daily_stationery", name: "文房具" },
+            { id: "daily_other", name: "その他" }
+          ]
+        },
+        {
+          id: "medical", name: "医療費", icon: "fa-briefcase-medical", color: "bg-teal-100 text-teal-600",
+          subCategories: [
+            { id: "med_hospital", name: "病院・診療" },
+            { id: "med_pharmacy", name: "処方箋・調剤" },
+            { id: "med_drug", name: "市販薬" },
+            { id: "med_other", name: "その他" }
+          ]
+        },
+        {
+          id: "housing", name: "住居・光熱費", icon: "fa-lightbulb", color: "bg-sky-100 text-sky-600",
+          subCategories: [
+            { id: "house_rent", name: "家賃・住宅" },
+            { id: "house_electric", name: "電気代" },
+            { id: "house_gas", name: "ガス代" },
+            { id: "house_water", name: "水道代" },
+            { id: "house_other", name: "その他" }
+          ]
+        },
+        {
+          id: "transport", name: "交通費", icon: "fa-train-subway", color: "bg-indigo-100 text-indigo-600",
+          subCategories: [
+            { id: "trans_train", name: "電車・バス" },
+            { id: "trans_gasoline", name: "ガソリン代" },
+            { id: "trans_taxi", name: "タクシー" },
+            { id: "trans_other", name: "その他" }
+          ]
+        },
+        {
+          id: "social", name: "交際費", icon: "fa-mug-saucer", color: "bg-pink-100 text-pink-600",
+          subCategories: [
+            { id: "soc_gift", name: "プレゼント" },
+            { id: "soc_eatout", name: "飲み会・食事" },
+            { id: "soc_ceremony", name: "冠婚葬祭" },
+            { id: "soc_other", name: "その他" }
+          ]
+        },
+        {
+          id: "entertainment", name: "趣味・娯楽", icon: "fa-gamepad", color: "bg-purple-100 text-purple-600",
+          subCategories: [
+            { id: "ent_hobby", name: "趣味・書籍" },
+            { id: "ent_travel", name: "レジャー・旅行" },
+            { id: "ent_subsc", name: "サブスク・ゲーム" },
+            { id: "ent_other", name: "その他" }
+          ]
+        },
+        {
+          id: "special", name: "特別費", icon: "fa-plane-departure", color: "bg-orange-100 text-orange-600",
+          subCategories: [
+            { id: "spc_furniture", name: "家具・家電" },
+            { id: "spc_tax", name: "税金・保険" },
+            { id: "spc_trip", name: "特別旅行" },
+            { id: "spc_other", name: "その他" }
+          ]
+        },
+        {
+          id: "other_exp", name: "その他支出", icon: "fa-box-archive", color: "bg-slate-100 text-slate-600",
+          subCategories: [
+            { id: "oth_exp_main", name: "使途不明・その他" }
+          ]
+        }
       ],
       income: [
-        { id: "salary", name: "給与", icon: "fa-money-bill-wave", color: "bg-emerald-100 text-emerald-600" },
-        { id: "bonus", name: "賞与", icon: "fa-award", color: "bg-amber-100 text-amber-600" },
-        { id: "side", name: "副収入", icon: "fa-laptop-code", color: "bg-sky-100 text-sky-600" },
-        { id: "other_inc", name: "その他収入", icon: "fa-wallet", color: "bg-slate-100 text-slate-600" }
+        {
+          id: "salary", name: "給与", icon: "fa-money-bill-wave", color: "bg-emerald-100 text-emerald-600",
+          subCategories: [
+            { id: "sal_main", name: "本給" },
+            { id: "sal_overtime", name: "残業代・手当" }
+          ]
+        },
+        {
+          id: "bonus", name: "賞与", icon: "fa-award", color: "bg-amber-100 text-amber-600",
+          subCategories: [
+            { id: "bon_summer", name: "夏季賞与" },
+            { id: "bon_winter", name: "冬季賞与" }
+          ]
+        },
+        {
+          id: "side", name: "副収入", icon: "fa-laptop-code", color: "bg-sky-100 text-sky-600",
+          subCategories: [
+            { id: "side_work", name: "事業・原稿・副業" },
+            { id: "side_point", name: "ポイント・フリマ" }
+          ]
+        },
+        {
+          id: "other_inc", name: "その他収入", icon: "fa-wallet", color: "bg-slate-100 text-slate-600",
+          subCategories: [
+            { id: "inc_other_main", name: "臨時収入・その他" }
+          ]
+        }
       ]
     };
 
@@ -796,12 +977,15 @@
     let isSplitMode = false;
     let inputScope = "always";
     let selectedSimpleCategoryId = "food";
+    let selectedSimpleSubCategoryId = "food_grocery";
     let attachedImageBase64 = null;
     let pendingScanResult = null;
     let isHistoryAllMode = false;
-
-    // ★ 編集モード管理用変数
     let editingRecordId = null;
+
+    // ★ ドリルダウン分析用
+    let currentDrilldownCatId = null;
+    let drilldownChartInstance = null;
 
     let records = [];
     let categories = null;
@@ -812,7 +996,8 @@
       cutoffDay: "25",
       holidayAdjustment: "prev",
       holidayTarget: "weekend_holiday",
-      geminiApiKey: ""
+      geminiApiKey: "",
+      gasBackupUrl: ""
     };
 
     let viewingDate = new Date();
@@ -832,7 +1017,6 @@
       return isNaN(num) ? 0 : num;
     }
 
-    // タグ文字列の整形（#がなくても自動で先頭に#を付与）
     function parseTagsInput(rawStr) {
       if (!rawStr) return [];
       const parts = String(rawStr).split(/[\s,、]+/).map(t => t.trim()).filter(Boolean);
@@ -896,6 +1080,19 @@
       return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 12, 0, 0);
     }
 
+    // 階層カテゴリの補完・名称取得ヘルパー
+    function getCategoryObj(catId, type = "expense") {
+      const pool = categories[type] || categories.expense || [];
+      return pool.find(c => c.id === catId) || pool[0];
+    }
+
+    function getSubCategoryName(catId, subCatId, type = "expense") {
+      const parent = getCategoryObj(catId, type);
+      if (!parent || !Array.isArray(parent.subCategories)) return "その他";
+      const sub = parent.subCategories.find(s => s.id === subCatId);
+      return sub ? sub.name : (parent.subCategories[0]?.name || "その他");
+    }
+
     const DB_NAME = "KakeiboPhotoDB";
     const DB_VERSION = 1;
 
@@ -952,20 +1149,32 @@
     function loadStorageData() {
       try {
         records = JSON.parse(localStorage.getItem("kakeibo_records") || "[]");
-        categories = JSON.parse(localStorage.getItem("kakeibo_categories") || "null") || JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        categories = JSON.parse(localStorage.getItem("kakeibo_categories") || "null");
         paymentMethods = JSON.parse(localStorage.getItem("kakeibo_payment_methods") || "null") || JSON.parse(JSON.stringify(DEFAULT_PAYMENT_METHODS));
         fixedExpenses = JSON.parse(localStorage.getItem("kakeibo_fixed_expenses") || "[]");
         const cfg = JSON.parse(localStorage.getItem("kakeibo_config") || "{}");
         appConfig = Object.assign(appConfig, cfg);
 
+        // ★ 中項目（subCategories）の自動マイグレーション・補完
+        if (!categories || !categories.expense) {
+          categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        } else {
+          ["expense", "income"].forEach(t => {
+            (categories[t] || []).forEach(cat => {
+              const defaultCat = DEFAULT_CATEGORIES[t].find(d => d.id === cat.id);
+              if (!Array.isArray(cat.subCategories) || cat.subCategories.length === 0) {
+                cat.subCategories = defaultCat ? JSON.parse(JSON.stringify(defaultCat.subCategories)) : [{ id: cat.id + "_other", name: "その他" }];
+              }
+            });
+          });
+        }
+
+        // 過去の明細データへの subCategoryId 自動補完
         let repaired = false;
         records.forEach(r => {
           const isZaim = String(r.id || "").startsWith("zaim_");
           const fixedDate = normalizeReceiptDate(r.date, !isZaim);
-          if (r.date !== fixedDate) {
-            r.date = fixedDate;
-            repaired = true;
-          }
+          if (r.date !== fixedDate) { r.date = fixedDate; repaired = true; }
           const numTotal = safeParseInt(r.totalAmount);
           if (numTotal <= 0 && Array.isArray(r.items) && r.items.length > 0) {
             r.totalAmount = r.items.reduce((acc, it) => acc + safeParseInt(it.price), 0);
@@ -973,10 +1182,20 @@
           } else {
             r.totalAmount = numTotal;
           }
+          if (Array.isArray(r.items)) {
+            r.items.forEach(it => {
+              if (!it.subCategoryId) {
+                const parent = getCategoryObj(it.categoryId, r.type);
+                it.subCategoryId = parent?.subCategories?.[0]?.id || "sub_other";
+                repaired = true;
+              }
+            });
+          }
         });
         if (repaired) {
           localStorage.setItem("kakeibo_records", JSON.stringify(records));
         }
+        localStorage.setItem("kakeibo_categories", JSON.stringify(categories));
       } catch (e) {
         console.error("ストレージ読込エラー", e);
       }
@@ -986,6 +1205,7 @@
       document.getElementById("setting-holiday-adj").value = appConfig.holidayAdjustment || "prev";
       document.getElementById("setting-holiday-target").value = appConfig.holidayTarget || "weekend_holiday";
       document.getElementById("setting-api-key").value = appConfig.geminiApiKey || "";
+      document.getElementById("setting-gas-url").value = appConfig.gasBackupUrl || "";
       updateSettingsCyclePreview();
     }
 
@@ -1203,7 +1423,10 @@
         updateTagFilterDropdown();
         renderHistoryList();
       }
-      if (tabId === "analytics") renderAnalytics();
+      if (tabId === "analytics") {
+        closeDrilldown();
+        renderAnalytics();
+      }
       if (tabId === "settings") renderSettingsTab();
     }
 
@@ -1296,7 +1519,7 @@
         simpleBox.classList.add("hidden");
         if (document.getElementById("split-items-list").children.length === 0) {
           const curSimple = safeParseInt(document.getElementById("simple-amount").value);
-          addSplitItemRow("品目1", curSimple > 0 ? curSimple : 0, "food");
+          addSplitItemRow("品目1", curSimple > 0 ? curSimple : 0, selectedSimpleCategoryId, selectedSimpleSubCategoryId);
         }
       } else {
         simpleBtn.className = "px-2.5 py-1 rounded-md bg-white text-teal-700 shadow-xs";
@@ -1332,7 +1555,6 @@
       }
     }
 
-    // 詳細モーダル内でのクイックタグ追加ボタン用
     function addTagToModalInput(tag) {
       const input = document.getElementById("modal-quick-tags");
       if (!input) return;
@@ -1343,6 +1565,7 @@
       }
     }
 
+    // ★ 大項目ボタングリッド ＆ 中項目チップスの描画
     function renderSimpleCategoryGrid() {
       const container = document.getElementById("simple-category-grid");
       container.innerHTML = "";
@@ -1354,9 +1577,11 @@
         btn.type = "button";
         btn.onclick = () => {
           selectedSimpleCategoryId = cat.id;
+          const firstSub = (cat.subCategories && cat.subCategories[0]) ? cat.subCategories[0].id : cat.id + "_other";
+          selectedSimpleSubCategoryId = firstSub;
           renderSimpleCategoryGrid();
         };
-        btn.className = `flex flex-col items-center justify-center p-1.5 rounded-xl border text-center transition ${isSel ? 'ring-2 ring-teal-600 bg-teal-50/50' : 'bg-white border-slate-200'}`;
+        btn.className = `flex flex-col items-center justify-center p-1.5 rounded-xl border text-center transition ${isSel ? 'ring-2 ring-teal-600 bg-teal-50/70 shadow-xs' : 'bg-white border-slate-200'}`;
         btn.innerHTML = `
           <div class="w-7 h-7 rounded-full ${cat.color} flex items-center justify-center text-xs mb-1">
             <i class="fa-solid ${cat.icon}"></i>
@@ -1365,37 +1590,85 @@
         `;
         container.appendChild(btn);
       });
+
+      renderSimpleSubCategoryChips();
     }
 
-    function addSplitItemRow(name = "", price = 0, catId = "food") {
+    function renderSimpleSubCategoryChips() {
+      const parent = getCategoryObj(selectedSimpleCategoryId, inputType);
+      const chipsEl = document.getElementById("simple-subcategory-chips");
+      const labelEl = document.getElementById("simple-subcat-selected-label");
+      chipsEl.innerHTML = "";
+
+      const subs = parent?.subCategories || [];
+      if (!subs.some(s => s.id === selectedSimpleSubCategoryId)) {
+        selectedSimpleSubCategoryId = subs[0]?.id || "";
+      }
+
+      const activeSub = subs.find(s => s.id === selectedSimpleSubCategoryId);
+      labelEl.textContent = activeSub ? `${parent.name} ＞ ${activeSub.name}` : parent.name;
+
+      subs.forEach(s => {
+        const isSel = s.id === selectedSimpleSubCategoryId;
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.onclick = () => {
+          selectedSimpleSubCategoryId = s.id;
+          renderSimpleSubCategoryChips();
+        };
+        chip.className = `text-[11px] font-bold px-3 py-1.5 rounded-xl border transition ${isSel ? 'bg-teal-700 text-white border-teal-700 shadow-xs' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'}`;
+        chip.textContent = s.name;
+        chipsEl.appendChild(chip);
+      });
+    }
+
+    // ★ スプリット行追加（大項目・中項目の2連連動セレクト）
+    function addSplitItemRow(name = "", price = 0, catId = "food", subCatId = "") {
       const container = document.getElementById("split-items-list");
       const rowId = "split_" + Date.now() + "_" + Math.random().toString(36).substring(2, 5);
       const row = document.createElement("div");
       row.id = rowId;
-      row.className = "flex items-center space-x-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs";
+      row.className = "bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5 text-xs";
 
       const catPool = categories[inputType] || categories.expense || [];
       const validCat = catPool.some(c => c.id === catId) ? catId : (catPool[0]?.id || "food");
-      const catOptions = catPool.map(c => `
-        <option value="${c.id}" ${c.id === validCat ? 'selected' : ''}>${c.name}</option>
-      `).join("");
+      const parentObj = catPool.find(c => c.id === validCat);
+      const subPool = parentObj?.subCategories || [];
+      const validSub = subPool.some(s => s.id === subCatId) ? subCatId : (subPool[0]?.id || "");
 
       const numPrice = safeParseInt(price);
 
       row.innerHTML = `
-        <input type="text" autocomplete="off" placeholder="品名(例: 風邪薬, お茶)" value="${escapeHtml(name)}" class="flex-1 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs item-name-input">
-        <select class="w-24 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs item-cat-input font-bold">
-          ${catOptions}
-        </select>
-        <div class="relative w-20">
-          <input type="number" autocomplete="off" placeholder="円" value="${numPrice !== 0 ? numPrice : ''}" oninput="calcSplitTotal()" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right item-price-input">
+        <div class="flex items-center space-x-1.5">
+          <input type="text" autocomplete="off" placeholder="品目名(例: 風邪薬, お茶)" value="${escapeHtml(name)}" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs item-name-input">
+          <div class="relative w-24">
+            <input type="number" autocomplete="off" placeholder="円" value="${numPrice !== 0 ? numPrice : ''}" oninput="calcSplitTotal()" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right item-price-input">
+          </div>
+          <button type="button" onclick="removeSplitRow('${rowId}')" class="text-slate-400 hover:text-rose-500 p-1">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
         </div>
-        <button type="button" onclick="removeSplitRow('${rowId}')" class="text-slate-400 hover:text-rose-500 p-1">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
+        <div class="flex items-center space-x-1.5 text-[11px]">
+          <select class="w-1/2 px-2 py-1 bg-white border border-slate-200 rounded-lg item-cat-input font-bold" onchange="onSplitParentCatChange('${rowId}')">
+            ${catPool.map(c => `<option value="${c.id}" ${c.id === validCat ? 'selected' : ''}>${c.name}</option>`).join("")}
+          </select>
+          <select class="w-1/2 px-2 py-1 bg-white border border-slate-200 rounded-lg item-subcat-input font-bold text-teal-700">
+            ${subPool.map(s => `<option value="${s.id}" ${s.id === validSub ? 'selected' : ''}>${s.name}</option>`).join("")}
+          </select>
+        </div>
       `;
       container.appendChild(row);
       calcSplitTotal();
+    }
+
+    function onSplitParentCatChange(rowId) {
+      const row = document.getElementById(rowId);
+      if (!row) return;
+      const catId = row.querySelector(".item-cat-input").value;
+      const subSelect = row.querySelector(".item-subcat-input");
+      const parent = getCategoryObj(catId, inputType);
+      const subs = parent?.subCategories || [];
+      subSelect.innerHTML = subs.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
     }
 
     function removeSplitRow(rowId) {
@@ -1477,9 +1750,6 @@
       }
     }
 
-    // ==========================================
-    // ★ 履歴明細を入力フォームへ呼び出してフル編集する機能
-    // ==========================================
     async function startEditRecord(recId) {
       const rec = records.find(r => r.id === recId);
       if (!rec) return;
@@ -1487,7 +1757,6 @@
       closeModal("detail-modal");
       editingRecordId = rec.id;
 
-      // 編集モードUIの表示切替
       document.getElementById("edit-mode-banner").classList.remove("hidden");
       document.getElementById("edit-mode-target-label").textContent = `${rec.date}「${rec.store}」を編集中`;
       document.getElementById("form-card-container").classList.add("ring-2", "ring-amber-400");
@@ -1495,7 +1764,6 @@
       document.getElementById("save-record-btn-text").textContent = "変更を上書き保存する";
       document.getElementById("cancel-edit-btn").classList.remove("hidden");
 
-      // 各フィールドの復元
       setInputType(rec.type || "expense");
       document.getElementById("form-date").value = normalizeReceiptDate(rec.date, false);
       document.getElementById("form-store").value = rec.store || "";
@@ -1507,22 +1775,21 @@
       const totalAmt = safeParseInt(rec.totalAmount);
       document.getElementById("simple-amount").value = totalAmt > 0 ? totalAmt : "";
 
-      // 品目・スプリット状態の復元
       const splitList = document.getElementById("split-items-list");
       splitList.innerHTML = "";
       if (Array.isArray(rec.items) && rec.items.length > 1) {
         setSplitMode(true);
         rec.items.forEach(it => {
-          addSplitItemRow(it.name, it.price, it.categoryId);
+          addSplitItemRow(it.name, it.price, it.categoryId, it.subCategoryId);
         });
       } else if (Array.isArray(rec.items) && rec.items.length === 1) {
         const singleItem = rec.items[0];
         selectedSimpleCategoryId = singleItem.categoryId || (rec.type === "income" ? "salary" : "food");
+        selectedSimpleSubCategoryId = singleItem.subCategoryId || "";
         renderSimpleCategoryGrid();
-        // 品目名が店名と異なる場合はスプリットとして展開できるようにセットしておく
         if (singleItem.name && singleItem.name !== rec.store) {
           setSplitMode(true);
-          addSplitItemRow(singleItem.name, singleItem.price, singleItem.categoryId);
+          addSplitItemRow(singleItem.name, singleItem.price, singleItem.categoryId, singleItem.subCategoryId);
         } else {
           setSplitMode(false);
         }
@@ -1530,7 +1797,6 @@
         setSplitMode(false);
       }
 
-      // 添付写真の復元
       if (rec.receiptImageId) {
         const photoData = await getPhotoFromDB(rec.receiptImageId);
         if (photoData) {
@@ -1569,7 +1835,6 @@
       setInclusionScope("always");
     }
 
-    // ★ 詳細モーダル内でのクイックタグ＆メモ即保存機能
     function saveQuickTagsAndMemo(recId) {
       const rec = records.find(r => r.id === recId);
       if (!rec) return;
@@ -1577,12 +1842,8 @@
       const tagInput = document.getElementById("modal-quick-tags");
       const memoInput = document.getElementById("modal-quick-memo");
 
-      if (tagInput) {
-        rec.tags = parseTagsInput(tagInput.value);
-      }
-      if (memoInput) {
-        rec.memo = memoInput.value.trim();
-      }
+      if (tagInput) rec.tags = parseTagsInput(tagInput.value);
+      if (memoInput) rec.memo = memoInput.value.trim();
 
       saveAllStorage();
       updateTagFilterDropdown();
@@ -1591,7 +1852,6 @@
       showToast("タグ・メモを更新しました！");
     }
 
-    // ★ 新規保存 & 上書き保存の両対応
     async function saveRecord() {
       const rawDate = document.getElementById("form-date").value || getTodayISO();
       const date = normalizeReceiptDate(rawDate, false);
@@ -1610,15 +1870,22 @@
           return;
         }
         totalAmount = amount;
-        items.push({ id: "it_1", name: store, price: amount, categoryId: selectedSimpleCategoryId });
+        items.push({
+          id: "it_1",
+          name: store,
+          price: amount,
+          categoryId: selectedSimpleCategoryId,
+          subCategoryId: selectedSimpleSubCategoryId
+        });
       } else {
         const rows = document.querySelectorAll("#split-items-list > div");
         rows.forEach((r, idx) => {
           const name = r.querySelector(".item-name-input").value.trim() || `品目${idx + 1}`;
           const price = safeParseInt(r.querySelector(".item-price-input").value);
           const catId = r.querySelector(".item-cat-input").value;
+          const subCatId = r.querySelector(".item-subcat-input").value;
           if (price !== 0) {
-            items.push({ id: `it_${idx + 1}`, name, price, categoryId: catId });
+            items.push({ id: `it_${idx + 1}`, name, price, categoryId: catId, subCategoryId: subCatId });
             totalAmount += price;
           }
         });
@@ -1626,7 +1893,7 @@
           const fallbackAmt = safeParseInt(document.getElementById("simple-amount").value) || safeParseInt(pendingScanResult?.total_amount);
           if (fallbackAmt > 0) {
             totalAmount = fallbackAmt;
-            items = [{ id: "it_1", name: store, price: fallbackAmt, categoryId: selectedSimpleCategoryId || "food" }];
+            items = [{ id: "it_1", name: store, price: fallbackAmt, categoryId: selectedSimpleCategoryId || "food", subCategoryId: selectedSimpleSubCategoryId }];
           } else {
             showToast("品目と金額を入力してください", true);
             return;
@@ -1663,17 +1930,16 @@
 
       if (wasEditing) {
         const idx = records.findIndex(r => r.id === editingRecordId);
-        if (idx !== -1) {
-          records[idx] = updatedRecord;
-        } else {
-          records.unshift(updatedRecord);
-        }
+        if (idx !== -1) records[idx] = updatedRecord;
+        else records.unshift(updatedRecord);
       } else {
         records.unshift(updatedRecord);
       }
 
       saveAllStorage();
       updateTagFilterDropdown();
+
+      sendRecordToGas(updatedRecord);
 
       viewingDate = parseLocalDate(date);
       cancelEditMode();
@@ -1696,8 +1962,53 @@
       switchTab("history");
     }
 
+    function sendRecordToGas(record) {
+      const gasUrl = (appConfig.gasBackupUrl || "").trim();
+      if (!gasUrl || !gasUrl.startsWith("http")) return;
+
+      const cleanRecord = Object.assign({}, record);
+      delete cleanRecord.receiptImageId;
+
+      fetch(gasUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "record", record: cleanRecord })
+      }).catch(err => {
+        console.warn("GAS自動バックアップ送信失敗:", err);
+      });
+    }
+
+    function saveGasUrl() {
+      const val = document.getElementById("setting-gas-url").value.trim();
+      appConfig.gasBackupUrl = val;
+      saveAllStorage();
+      showToast("スプレッドシート連携URLを保存しました！");
+    }
+
+    function testGasConnection() {
+      const gasUrl = (document.getElementById("setting-gas-url").value || "").trim();
+      if (!gasUrl || !gasUrl.startsWith("http")) {
+        showToast("先に有効なGAS URLを入力してください", true);
+        return;
+      }
+      const testRecord = {
+        id: "test_" + Date.now(),
+        date: getTodayISO(),
+        store: "【テスト送信】スマート家計簿",
+        paymentMethod: "現金",
+        totalAmount: 100,
+        inclusionScope: "always",
+        tags: ["#テスト"],
+        memo: "連携テスト明細です",
+        items: [{ name: "テスト品目", price: 100, categoryId: "その他", subCategoryId: "その他" }]
+      };
+      sendRecordToGas(testRecord);
+      showToast("スプレッドシートへテスト送信を行いました！シート側をご確認ください");
+    }
+
     // ==========================================
-    // レシート解析
+    // レシート解析（大項目・中項目の同時推定）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1727,18 +2038,24 @@
         document.getElementById("ai-loading-title").textContent = "② Google AIへ通信中...";
         document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>AIからの即時応答を待っています`;
 
-        const availableCats = categories.expense.map(c => c.id).join(", ");
         const curYear = new Date().getFullYear();
         
+        // 大項目と中項目のペア候補テキストを生成
+        const catCatalog = (categories.expense || []).map(c => {
+          const subs = (c.subCategories || []).map(s => s.name).join("/");
+          return `${c.id}:${c.name}(${subs})`;
+        }).join("; ");
+
         const promptText = `
 レシート画像から文字を正確に読み取り、以下の短縮JSONのみを出力してください。
-- 現在は西暦${curYear}年です。日付の年が省略されている場合や2桁表記の場合は${curYear}年として "YYYY-MM-DD" 形式で出力してください。
-- "t" にはレシート記載の最終的な支払合計金額（税込合計）の整数を入れてください。
-- "i" にはレシートに印字されているすべての購入品目・値引きを省略せず配列で入れてください。
+- 現在は西暦${curYear}年です。日付の年が省略または2桁表記の場合は${curYear}年として "YYYY-MM-DD" で出力してください。
+- "t" にはレシート記載の最終支払合計金額（税込）を入れてください。
+- "i" には全品目を配列で入れてください。各品目: ["品名", 金額, "大項目ID", "中項目名"]
 
-{"s":"店名","p":"電話番号","d":"${getTodayISO()}","t":0,"i":[["品名",0,"food"]]}
+{"s":"店名","p":"電話番号","d":"${getTodayISO()}","t":0,"i":[["品名",0,"food","食料品"]]}
 
-利用可能カテゴリID: [${availableCats}] (医薬品はmedical、食品はfood、日用品はdaily)。日付不明時は "${getTodayISO()}"。
+利用可能カテゴリマスター: [${catCatalog}]
+日付不明時は "${getTodayISO()}"。
         `.trim();
 
         const payload = {
@@ -1774,42 +2091,31 @@
         if (Array.isArray(parsed.i)) {
           items = parsed.i.map(item => {
             if (Array.isArray(item)) {
-              return { name: String(item[0] || "品目"), price: safeParseInt(item[1]), categoryId: item[2] || "food" };
-            } else if (typeof item === "object" && item !== null) {
-              return { name: String(item.name || "品目"), price: safeParseInt(item.price), categoryId: item.categoryId || "food" };
+              const cId = item[2] || "food";
+              const parent = getCategoryObj(cId, "expense");
+              const rawSubName = String(item[3] || "");
+              // 中項目名のマッチング
+              let matchedSub = parent?.subCategories?.find(s => s.name === rawSubName || rawSubName.includes(s.name) || s.name.includes(rawSubName));
+              const subId = matchedSub ? matchedSub.id : (parent?.subCategories?.[0]?.id || "food_other");
+              return { name: String(item[0] || "品目"), price: safeParseInt(item[1]), categoryId: cId, subCategoryId: subId };
             }
-            return { name: "品目", price: 0, categoryId: "food" };
+            return { name: "品目", price: 0, categoryId: "food", subCategoryId: "food_grocery" };
           }).filter(it => it.price !== 0);
-        } else if (Array.isArray(parsed.items)) {
-          items = parsed.items.map(it => ({
-            name: String(it.name || "品目"),
-            price: safeParseInt(it.price),
-            categoryId: it.categoryId || "food"
-          })).filter(it => it.price !== 0);
         }
 
         let receiptTotal = safeParseInt(parsed.t !== undefined ? parsed.t : parsed.total_amount);
         const itemsSum = items.reduce((acc, cur) => acc + cur.price, 0);
 
-        if (receiptTotal <= 0 && itemsSum > 0) {
-          receiptTotal = itemsSum;
-        }
+        if (receiptTotal <= 0 && itemsSum > 0) receiptTotal = itemsSum;
 
         if (receiptTotal > 0 && items.length > 0 && receiptTotal !== itemsSum) {
           const diff = receiptTotal - itemsSum;
           const mainCat = items[0]?.categoryId || "food";
+          const mainSub = items[0]?.subCategoryId || "food_grocery";
           const label = diff > 0 ? "外税・差額調整" : "値引・差額調整";
-          items.push({
-            name: label,
-            price: diff,
-            categoryId: mainCat
-          });
+          items.push({ name: label, price: diff, categoryId: mainCat, subCategoryId: mainSub });
         } else if (receiptTotal > 0 && items.length === 0) {
-          items.push({
-            name: parsed.s || parsed.store || "お買い物",
-            price: receiptTotal,
-            categoryId: "food"
-          });
+          items.push({ name: parsed.s || parsed.store || "お買い物", price: receiptTotal, categoryId: "food", subCategoryId: "food_grocery" });
         }
 
         const normalizedDate = normalizeReceiptDate(parsed.d || parsed.date, true);
@@ -1870,9 +2176,7 @@
           });
 
           if (response.status === 429) throw new Error("RATE_LIMIT");
-          if (response.ok) {
-            return { res: response, usedModel: m };
-          }
+          if (response.ok) return { res: response, usedModel: m };
           const errBody = await response.text();
           lastError = new Error("[" + m + "] HTTP " + response.status + ": " + errBody);
         } catch (e) {
@@ -1932,14 +2236,15 @@
       const itemsEl = document.getElementById("scan-res-items");
       itemsEl.innerHTML = "";
       (data.items || []).forEach(it => {
-        const cat = categories.expense.find(c => c.id === it.categoryId) || { name: "食費" };
+        const cat = getCategoryObj(it.categoryId, "expense");
+        const subName = getSubCategoryName(it.categoryId, it.subCategoryId, "expense");
         const isAdj = it.name.includes("差額調整");
         const row = document.createElement("div");
         row.className = `flex justify-between items-center py-1 border-b border-slate-100 ${isAdj ? 'text-teal-700 bg-teal-50/60 px-1 rounded' : ''}`;
         row.innerHTML = `
           <div>
             <span class="font-bold">${escapeHtml(it.name)}</span>
-            <span class="text-[9px] bg-slate-200 text-slate-600 px-1 py-0.5 rounded ml-1 font-bold">${cat.name}</span>
+            <span class="text-[9px] bg-slate-200 text-slate-700 px-1 py-0.5 rounded ml-1 font-bold">${cat.name} ＞ ${subName}</span>
           </div>
           <span class="font-black">¥${safeParseInt(it.price).toLocaleString()}</span>
         `;
@@ -1966,10 +2271,10 @@
 
       if (pendingScanResult.items && pendingScanResult.items.length > 0) {
         pendingScanResult.items.forEach(it => {
-          addSplitItemRow(it.name, it.price, it.categoryId);
+          addSplitItemRow(it.name, it.price, it.categoryId, it.subCategoryId);
         });
       } else {
-        addSplitItemRow("合計", totalAmt, "food");
+        addSplitItemRow("合計", totalAmt, "food", "food_grocery");
       }
       showToast(`支払合計 ¥${totalAmt.toLocaleString()} をフォームに反映しました`);
     }
@@ -1980,24 +2285,17 @@
       document.getElementById("attached-image-preview-box").classList.add("hidden");
     }
 
-    // ★ タグ絞り込みドロップダウンの動的更新
     function updateTagFilterDropdown() {
       const sel = document.getElementById("hist-filter-tag");
       if (!sel) return;
       const curVal = sel.value;
       const tagSet = new Set();
       records.forEach(r => {
-        (r.tags || []).forEach(t => {
-          if (t) tagSet.add(t);
-        });
+        (r.tags || []).forEach(t => { if (t) tagSet.add(t); });
       });
       const sortedTags = Array.from(tagSet).sort();
       sel.innerHTML = `<option value="all">すべてのタグ</option>` + sortedTags.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
-      if (sortedTags.includes(curVal)) {
-        sel.value = curVal;
-      } else {
-        sel.value = "all";
-      }
+      sel.value = sortedTags.includes(curVal) ? curVal : "all";
     }
 
     function toggleHistoryAllMode() {
@@ -2026,7 +2324,10 @@
         viewingDate.setMonth(viewingDate.getMonth() + delta);
       }
       if (currentTab === "history") renderHistoryList();
-      if (currentTab === "analytics") renderAnalytics();
+      if (currentTab === "analytics") {
+        if (currentDrilldownCatId) renderDrilldownAnalytics();
+        else renderAnalytics();
+      }
     }
 
     function renderHistoryList() {
@@ -2116,8 +2417,9 @@
           row.className = "p-3 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 cursor-pointer transition";
           row.onclick = () => openDetailModal(rec);
 
-          const firstCatId = rec.items?.[0]?.categoryId || "food";
-          const cat = (rec.type === "expense" ? categories.expense : categories.income).find(c => c.id === firstCatId) || { icon: "fa-box-archive", color: "bg-slate-100 text-slate-600" };
+          const firstItem = rec.items?.[0] || { categoryId: "food", subCategoryId: "food_grocery" };
+          const cat = getCategoryObj(firstItem.categoryId, rec.type);
+          const subName = getSubCategoryName(firstItem.categoryId, firstItem.subCategoryId, rec.type);
 
           let scopeBadge = "";
           if (rec.inclusionScope === "yearly_only") {
@@ -2142,7 +2444,8 @@
                   ${hasPhotoIcon}
                 </div>
                 <div class="text-[10px] text-slate-400 truncate flex items-center gap-1 mt-0.5">
-                  <span>${getPaymentName(rec.paymentMethod)} ${rec.items?.length > 1 ? `· ${rec.items.length}品目` : ''}</span>
+                  <span class="text-slate-600 font-bold">${cat.name} ＞ ${subName}</span>
+                  <span>· ${getPaymentName(rec.paymentMethod)}</span>
                   ${tagBadges}
                 </div>
               </div>
@@ -2161,7 +2464,6 @@
       });
     }
 
-    // ★ 詳細モーダル（その場でクイックタグ＆メモ編集 ＋ フル編集呼び出し）
     async function openDetailModal(rec) {
       const body = document.getElementById("detail-modal-body");
       body.innerHTML = `<div class="text-center py-4 text-slate-400">読み込み中...</div>`;
@@ -2181,14 +2483,14 @@
       }
 
       let itemsHtml = "";
-      const catPool = rec.type === "income" ? categories.income : categories.expense;
       (rec.items || []).forEach(it => {
-        const cat = catPool.find(c => c.id === it.categoryId) || { name: "その他" };
+        const cat = getCategoryObj(it.categoryId, rec.type);
+        const subName = getSubCategoryName(it.categoryId, it.subCategoryId, rec.type);
         itemsHtml += `
           <div class="flex justify-between items-center py-1 border-b border-slate-100">
             <div>
               <span class="font-bold text-slate-700">${escapeHtml(it.name)}</span>
-              <span class="text-[9px] bg-slate-200 text-slate-600 px-1 py-0.5 rounded ml-1 font-bold">${cat.name}</span>
+              <span class="text-[9px] bg-slate-200 text-slate-700 px-1 py-0.5 rounded ml-1 font-bold">${cat.name} ＞ ${subName}</span>
             </div>
             <span class="font-bold text-slate-800">¥${safeParseInt(it.price).toLocaleString()}</span>
           </div>
@@ -2209,7 +2511,6 @@
           <div class="flex justify-between pt-1 border-t border-slate-200"><span class="text-slate-400">合計金額:</span><span class="font-black text-rose-500 text-base">¥${dispAmt.toLocaleString()}</span></div>
         </div>
 
-        <!-- ★ クイックタグ付け & メモ編集ボックス -->
         <div class="bg-teal-50/70 p-3 rounded-xl border border-teal-200 space-y-2">
           <div class="text-[11px] font-bold text-teal-800 flex items-center space-x-1">
             <i class="fa-solid fa-tags"></i>
@@ -2223,7 +2524,6 @@
               <button type="button" onclick="addTagToModalInput('#イベント')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#イベント</button>
               <button type="button" onclick="addTagToModalInput('#日用品')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#日用品</button>
               <button type="button" onclick="addTagToModalInput('#医療費')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#医療費</button>
-              <button type="button" onclick="addTagToModalInput('#特別費')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#特別費</button>
             </div>
           </div>
           <div>
@@ -2241,10 +2541,7 @@
         ${photoHtml}
       `;
 
-      document.getElementById("detail-modal-edit-btn").onclick = () => {
-        startEditRecord(rec.id);
-      };
-
+      document.getElementById("detail-modal-edit-btn").onclick = () => startEditRecord(rec.id);
       document.getElementById("detail-modal-delete-btn").onclick = () => {
         confirmAction("明細の削除", `「${rec.store} (¥${dispAmt.toLocaleString()})」を削除しますか？`, () => {
           records = records.filter(r => r.id !== rec.id);
@@ -2259,6 +2556,9 @@
       };
     }
 
+    // ==========================================
+    // ★ 分析タブ（大項目全体 ＋ 画像5・6の中項目ドリルダウン）
+    // ==========================================
     function setAnalyticsSubTab(tab) {
       analyticsSubTab = tab;
       ["month", "year", "medical"].forEach(b => {
@@ -2266,6 +2566,7 @@
         btn.className = (b === tab) ? "py-1.5 rounded-lg bg-teal-700 text-white shadow-xs" : "py-1.5 rounded-lg text-slate-600";
       });
 
+      closeDrilldown();
       const stdView = document.getElementById("anl-standard-view");
       const medView = document.getElementById("anl-medical-view");
       const yrChartCard = document.getElementById("anl-yearly-chart-card");
@@ -2285,6 +2586,11 @@
     function renderAnalytics() {
       const year = viewingDate.getFullYear();
       const cycle = getCycleRange(viewingDate, appConfig);
+
+      if (currentDrilldownCatId) {
+        renderDrilldownAnalytics();
+        return;
+      }
 
       if (analyticsSubTab === "month") {
         document.getElementById("anl-period-label").textContent = `${cycle.label} (月別)`;
@@ -2384,6 +2690,139 @@
       });
     }
 
+    function renderCategoryRanking(catTotals, totalExp) {
+      const list = document.getElementById("category-ranking-list");
+      list.innerHTML = "";
+      const active = categories.expense.filter(c => (catTotals[c.id] || 0) > 0);
+      active.sort((a, b) => catTotals[b.id] - catTotals[a.id]);
+
+      if (active.length === 0) {
+        list.innerHTML = `<div class="text-xs text-slate-400 py-3 text-center">データがありません</div>`;
+        return;
+      }
+      active.forEach(c => {
+        const val = catTotals[c.id];
+        const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
+        const row = document.createElement("div");
+        row.className = "space-y-1 p-2 rounded-xl hover:bg-slate-50 active:bg-slate-100 cursor-pointer transition border border-transparent hover:border-slate-200";
+        row.onclick = () => openDrilldown(c.id);
+        row.innerHTML = `
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-700 flex items-center space-x-1.5">
+              <span class="w-5 h-5 rounded-full ${c.color} inline-flex items-center justify-center text-[9px]"><i class="fa-solid ${c.icon}"></i></span>
+              <span>${c.name}</span>
+            </span>
+            <span class="font-black text-slate-800">¥${val.toLocaleString()} <span class="text-slate-400 font-normal text-[10px]">(${pct}%)</span> <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 ml-1"></i></span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-teal-700 h-1.5 rounded-full" style="width: ${pct}%"></div>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    // ★ 中項目ドリルダウン画面の開閉＆描画（画像5・6の完全再現）
+    function openDrilldown(catId) {
+      currentDrilldownCatId = catId;
+      document.getElementById("anl-standard-view").classList.add("hidden");
+      document.getElementById("anl-drilldown-view").classList.remove("hidden");
+      renderDrilldownAnalytics();
+    }
+
+    function closeDrilldown() {
+      currentDrilldownCatId = null;
+      document.getElementById("anl-drilldown-view").classList.add("hidden");
+      document.getElementById("anl-standard-view").classList.remove("hidden");
+      if (drilldownChartInstance) drilldownChartInstance.destroy();
+    }
+
+    function renderDrilldownAnalytics() {
+      if (!currentDrilldownCatId) return;
+      const parent = getCategoryObj(currentDrilldownCatId, "expense");
+      const cycle = getCycleRange(viewingDate, appConfig);
+      const isYear = analyticsSubTab === "year";
+      const year = viewingDate.getFullYear();
+
+      document.getElementById("drilldown-cat-badge").textContent = isYear ? `${year}年 (年間)` : cycle.label;
+      document.getElementById("drilldown-cat-full-title").textContent = `${parent.name}全体`;
+
+      const subTotals = {};
+      (parent.subCategories || []).forEach(s => { subTotals[s.id] = 0; });
+
+      let parentTotal = 0;
+      records.forEach(r => {
+        if (!r.date || r.type !== "expense") return;
+        if (!isYear) {
+          const rDate = parseLocalDate(r.date);
+          if (rDate < cycle.startDate || rDate > cycle.endDate) return;
+        } else {
+          const normD = normalizeReceiptDate(r.date, false);
+          if (!normD.startsWith(`${year}-`)) return;
+        }
+        if ((r.inclusionScope || "always") !== "always") return;
+
+        (r.items || []).forEach(it => {
+          if (it.categoryId === currentDrilldownCatId) {
+            const p = safeParseInt(it.price);
+            const subId = it.subCategoryId || parent.subCategories?.[0]?.id || "sub_other";
+            subTotals[subId] = (subTotals[subId] || 0) + p;
+            parentTotal += p;
+          }
+        });
+      });
+
+      document.getElementById("drilldown-cat-full-amount").textContent = `¥${parentTotal.toLocaleString()}`;
+      document.getElementById("drilldown-chart-center-total").textContent = `¥${parentTotal.toLocaleString()}`;
+
+      // 中項目円グラフの描画
+      const canvas = document.getElementById("drilldownChart");
+      if (drilldownChartInstance) drilldownChartInstance.destroy();
+
+      const activeSubs = (parent.subCategories || []).filter(s => (subTotals[s.id] || 0) > 0);
+      const subPalette = ["#f87171", "#fb923c", "#facc15", "#4ade80", "#2dd4bf", "#38bdf8", "#818cf8", "#c084fc", "#f472b6"];
+
+      drilldownChartInstance = new Chart(canvas, {
+        type: "doughnut",
+        data: {
+          labels: activeSubs.length > 0 ? activeSubs.map(s => s.name) : ["支出なし"],
+          datasets: [{
+            data: activeSubs.length > 0 ? activeSubs.map(s => subTotals[s.id]) : [1],
+            backgroundColor: activeSubs.length > 0 ? activeSubs.map((_, i) => subPalette[i % subPalette.length]) : ["#e2e8f0"],
+            borderWidth: 2,
+            borderColor: "#ffffff"
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "68%",
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      // 画像5・6のように中項目をすべて（¥0のものも）一覧表示
+      const listContainer = document.getElementById("drilldown-subcat-list");
+      listContainer.innerHTML = "";
+
+      const subsSorted = (parent.subCategories || []).slice().sort((a, b) => (subTotals[b.id] || 0) - (subTotals[a.id] || 0));
+
+      subsSorted.forEach((s, idx) => {
+        const val = subTotals[s.id] || 0;
+        const dotColor = (val > 0) ? subPalette[idx % subPalette.length] : "#cbd5e1";
+        const row = document.createElement("div");
+        row.className = "py-2.5 flex justify-between items-center text-xs";
+        row.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" style="background-color: ${dotColor};"></span>
+            <span class="font-bold text-slate-700">${escapeHtml(s.name)}</span>
+          </div>
+          <span class="font-black ${val > 0 ? 'text-slate-800' : 'text-slate-300'}">¥${val.toLocaleString()}</span>
+        `;
+        listContainer.appendChild(row);
+      });
+    }
+
     function renderYearlyBarChart(expData, incData) {
       const canvas = document.getElementById("yearlyChart");
       if (yearlyChartInstance) yearlyChartInstance.destroy();
@@ -2406,37 +2845,6 @@
             y: { ticks: { font: { size: 9 }, callback: (v) => v >= 10000 ? (v / 10000) + '万' : v } }
           }
         }
-      });
-    }
-
-    function renderCategoryRanking(catTotals, totalExp) {
-      const list = document.getElementById("category-ranking-list");
-      list.innerHTML = "";
-      const active = categories.expense.filter(c => (catTotals[c.id] || 0) > 0);
-      active.sort((a, b) => catTotals[b.id] - catTotals[a.id]);
-
-      if (active.length === 0) {
-        list.innerHTML = `<div class="text-xs text-slate-400 py-3 text-center">データがありません</div>`;
-        return;
-      }
-      active.forEach(c => {
-        const val = catTotals[c.id];
-        const pct = totalExp > 0 ? Math.round((val / totalExp) * 100) : 0;
-        const row = document.createElement("div");
-        row.className = "space-y-1";
-        row.innerHTML = `
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-700 flex items-center space-x-1.5">
-              <span class="w-5 h-5 rounded-full ${c.color} inline-flex items-center justify-center text-[9px]"><i class="fa-solid ${c.icon}"></i></span>
-              <span>${c.name}</span>
-            </span>
-            <span class="font-black text-slate-800">¥${val.toLocaleString()} <span class="text-slate-400 font-normal text-[10px]">(${pct}%)</span></span>
-          </div>
-          <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div class="bg-teal-700 h-1.5 rounded-full" style="width: ${pct}%"></div>
-          </div>
-        `;
-        list.appendChild(row);
       });
     }
 
@@ -2498,41 +2906,333 @@
       showToast("医療費控除用CSVを出力しました");
     }
 
-    function renderSettingsTab() {
-      document.getElementById("setting-budget").value = appConfig.budget || 100000;
-      document.getElementById("setting-cutoff-day").value = String(appConfig.cutoffDay);
-      document.getElementById("setting-holiday-adj").value = appConfig.holidayAdjustment || "prev";
-      document.getElementById("setting-holiday-target").value = appConfig.holidayTarget || "weekend_holiday";
-      document.getElementById("setting-api-key").value = appConfig.geminiApiKey || "";
-
-      updateSettingsCyclePreview();
-      renderFixedExpensesList();
-      renderPaymentMethodBadges();
-      populateFixedModalCategories();
+    // ==========================================
+    // ★ 大項目 ＆ 中項目マスターの編集・追加機能
+    // ==========================================
+    function openCategoryManageModal() {
+      renderCategoryManageList();
+      openModal("category-manage-modal");
     }
 
-    function saveBudgetSettings() {
-      const b = safeParseInt(document.getElementById("setting-budget").value);
-      const cd = document.getElementById("setting-cutoff-day").value;
-      const adj = document.getElementById("setting-holiday-adj").value;
-      const tgt = document.getElementById("setting-holiday-target").value;
+    function setCategoryManageTab(type) {
+      catManageType = type;
+      document.getElementById("cat-tab-exp").className = (type === "expense") ? "py-1.5 rounded-lg bg-white shadow-xs text-teal-800" : "py-1.5 rounded-lg text-slate-500";
+      document.getElementById("cat-tab-inc").className = (type === "income") ? "py-1.5 rounded-lg bg-white shadow-xs text-teal-800" : "py-1.5 rounded-lg text-slate-500";
+      renderCategoryManageList();
+    }
 
-      if (b > 0) appConfig.budget = b;
-      appConfig.cutoffDay = cd;
-      appConfig.holidayAdjustment = adj;
-      appConfig.holidayTarget = tgt;
+    function renderCategoryManageList() {
+      const listEl = document.getElementById("category-manage-list");
+      listEl.innerHTML = "";
+      const pool = categories[catManageType] || [];
+
+      pool.forEach(c => {
+        const itemBox = document.createElement("div");
+        itemBox.className = "bg-slate-50 rounded-xl p-2.5 border border-slate-200/80 space-y-2";
+
+        const subListHtml = (c.subCategories || []).map(s => `
+          <span class="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-lg">
+            <span>${escapeHtml(s.name)}</span>
+            <button type="button" onclick="openSubCategoryEditModal('${c.id}', '${s.id}', '${escapeHtml(s.name)}')" class="text-slate-400 hover:text-teal-600 ml-0.5"><i class="fa-solid fa-pen text-[8px]"></i></button>
+            <button type="button" onclick="deleteSubCategory('${c.id}', '${s.id}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark text-[9px]"></i></button>
+          </span>
+        `).join(" ");
+
+        itemBox.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-6 h-6 rounded-full ${c.color} flex items-center justify-center text-[10px]"><i class="fa-solid ${c.icon}"></i></span>
+              <span class="font-bold text-slate-800 text-xs">${escapeHtml(c.name)}</span>
+            </div>
+            <div class="flex space-x-1.5">
+              <button onclick="openSubCategoryEditModal('${c.id}', null, '')" class="text-[10px] bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-md border border-teal-200 hover:bg-teal-100">
+                + 中項目追加
+              </button>
+              <button onclick="openCategoryEditForm('${c.id}')" class="p-1 text-slate-400 hover:text-teal-600"><i class="fa-solid fa-pen text-xs"></i></button>
+              <button onclick="deleteCategory('${c.id}')" class="p-1 text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash text-xs"></i></button>
+            </div>
+          </div>
+          <div class="pt-1 border-t border-slate-200/60 flex flex-wrap gap-1">
+            ${subListHtml}
+          </div>
+        `;
+        listEl.appendChild(itemBox);
+      });
+    }
+
+    function openCategoryEditForm(catId) {
+      initCategoryPickers();
+      const idInput = document.getElementById("edit-cat-id");
+      const nameInput = document.getElementById("edit-cat-name");
+      const title = document.getElementById("cat-edit-title");
+      if (catId) {
+        title.textContent = "大項目の編集";
+        const c = categories[catManageType].find(x => x.id === catId);
+        idInput.value = catId;
+        nameInput.value = c ? c.name : "";
+        editCatIcon = c ? c.icon : ICON_PRESETS[0];
+        editCatColor = c ? c.color : COLOR_PRESETS[0].class;
+      } else {
+        title.textContent = "新規大項目の追加";
+        idInput.value = "";
+        nameInput.value = "";
+        editCatIcon = ICON_PRESETS[0];
+        editCatColor = COLOR_PRESETS[0].class;
+      }
+      openModal("category-edit-modal");
+    }
+
+    function initCategoryPickers() {
+      document.getElementById("icon-picker").innerHTML = ICON_PRESETS.map(ic => `<button type="button" onclick="editCatIcon='${ic}';showToast('アイコンを選択');" class="p-1.5 rounded-lg border bg-white text-slate-600 hover:bg-teal-50 flex items-center justify-center"><i class="fa-solid ${ic}"></i></button>`).join("");
+      document.getElementById("color-picker").innerHTML = COLOR_PRESETS.map(col => `<button type="button" onclick="editCatColor='${col.class}';showToast('カラーを選択');" class="w-6 h-6 rounded-full ${col.class} shrink-0 border-2 border-transparent hover:scale-110 transition"></button>`).join("");
+    }
+
+    function saveCategoryEdit() {
+      const name = document.getElementById("edit-cat-name").value.trim();
+      const id = document.getElementById("edit-cat-id").value;
+      if (!name) return;
+      if (id) {
+        const c = categories[catManageType].find(x => x.id === id);
+        if (c) { c.name = name; c.icon = editCatIcon; c.color = editCatColor; }
+      } else {
+        const newCatId = "custom_" + Date.now().toString(36);
+        categories[catManageType].push({
+          id: newCatId,
+          name: name,
+          icon: editCatIcon,
+          color: editCatColor,
+          subCategories: [{ id: newCatId + "_other", name: "その他" }]
+        });
+      }
+      saveAllStorage();
+      closeModal("category-edit-modal");
+      renderCategoryManageList();
+      renderSimpleCategoryGrid();
+      showToast("大項目を保存しました");
+    }
+
+    function deleteCategory(id) {
+      if (categories[catManageType].length <= 1) { showToast("最低1つの大項目が必要です", true); return; }
+      categories[catManageType] = categories[catManageType].filter(c => c.id !== id);
+      saveAllStorage();
+      renderCategoryManageList();
+      renderSimpleCategoryGrid();
+    }
+
+    // 中項目の編集・追加モーダル
+    function openSubCategoryEditModal(parentId, subId, currentName) {
+      document.getElementById("edit-subcat-parent-id").value = parentId;
+      document.getElementById("edit-subcat-id").value = subId || "";
+      document.getElementById("edit-subcat-name").value = currentName || "";
+      document.getElementById("subcat-edit-title").textContent = subId ? "中項目の名前変更" : "新規中項目の追加";
+      openModal("subcat-edit-modal");
+    }
+
+    function saveSubCategoryEdit() {
+      const parentId = document.getElementById("edit-subcat-parent-id").value;
+      const subId = document.getElementById("edit-subcat-id").value;
+      const name = document.getElementById("edit-subcat-name").value.trim();
+      if (!name) return;
+
+      const parent = getCategoryObj(parentId, catManageType);
+      if (!parent) return;
+
+      if (!Array.isArray(parent.subCategories)) parent.subCategories = [];
+
+      if (subId) {
+        const s = parent.subCategories.find(x => x.id === subId);
+        if (s) s.name = name;
+      } else {
+        parent.subCategories.push({
+          id: parentId + "_sub_" + Date.now().toString(36),
+          name: name
+        });
+      }
 
       saveAllStorage();
-      renderDashboard();
-      updateSettingsCyclePreview();
-      showToast("予算・締め日設定を保存しました！");
+      closeModal("subcat-edit-modal");
+      renderCategoryManageList();
+      renderSimpleCategoryGrid();
+      showToast("中項目を保存しました！");
     }
 
+    function deleteSubCategory(parentId, subId) {
+      const parent = getCategoryObj(parentId, catManageType);
+      if (!parent || !Array.isArray(parent.subCategories)) return;
+      if (parent.subCategories.length <= 1) {
+        showToast("中項目は最低1つ必要です", true);
+        return;
+      }
+      parent.subCategories = parent.subCategories.filter(s => s.id !== subId);
+      saveAllStorage();
+      renderCategoryManageList();
+      renderSimpleCategoryGrid();
+      showToast("中項目を削除しました");
+    }
+
+    function saveApiKey() {
+      const k = document.getElementById("setting-api-key").value.trim();
+      appConfig.geminiApiKey = k;
+      localStorage.setItem('gemini_api_key', k);
+      saveAllStorage();
+      showToast("Gemini APIキーを保存しました！");
+    }
+    function toggleKeyVisibility() {
+      const el = document.getElementById("setting-api-key");
+      el.classList.toggle("masked-key");
+    }
+
+    function exportFullBackupJSON() {
+      const full = { app: "KakeiboPWA", version: "3.0", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
+      showToast("完全バックアップJSONを出力しました");
+    }
+
+    function importFullBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imp = JSON.parse(e.target.result);
+          if (imp.records) records = imp.records;
+          if (imp.categories) categories = imp.categories;
+          if (imp.paymentMethods) paymentMethods = imp.paymentMethods;
+          if (imp.fixedExpenses) fixedExpenses = imp.fixedExpenses;
+          if (imp.config) appConfig = imp.config;
+          saveAllStorage();
+          loadStorageData();
+          updateTagFilterDropdown();
+          renderDashboard();
+          showToast("バックアップから復元しました！");
+        } catch { showToast("復元に失敗しました", true); }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function exportStandardCSV() {
+      if (records.length === 0) { showToast("データがありません", true); return; }
+      let csv = "\uFEFFid,日付,種別,店名,電話番号,支払元,集計対象,タグ,メモ,品目名,大項目,中項目,金額\n";
+      records.forEach(r => {
+        (r.items || []).forEach(it => {
+          const cat = getCategoryObj(it.categoryId, r.type);
+          const subName = getSubCategoryName(it.categoryId, it.subCategoryId, r.type);
+          csv += `"${r.id}","${r.date}","${r.type}","${(r.store||'').replace(/"/g, '""')}","${r.phone||''}","${r.paymentMethod}","${r.inclusionScope}","${(r.tags||[]).join(' ')}","${(r.memo||'').replace(/"/g, '""')}","${(it.name||'').replace(/"/g, '""')}","${cat.name}","${subName}",${safeParseInt(it.price)}\n`;
+        });
+      });
+      downloadFile(csv, `家計簿明細_${getTodayISO()}.csv`, "text/csv;charset=utf-8;");
+      showToast("CSVファイルを出力しました");
+    }
+
+    function loadDemoData() {
+      const now = new Date();
+      const yr = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const demos = [
+        {
+          id: "demo_1", date: `${yr}-${m}-${d}`, type: "expense", store: "ライフ スーパー", phone: "03-5555-6666", paymentMethod: "main_card", tags: ["#自炊"], inclusionScope: "always", memo: "夕食食材まとめ買い", totalAmount: 3840,
+          items: [
+            { id: "it_1", name: "豚肉・野菜・納豆", price: 2840, categoryId: "food", subCategoryId: "food_grocery" },
+            { id: "it_2", name: "シャンプー・洗剤", price: 1000, categoryId: "daily", subCategoryId: "daily_consumable" }
+          ]
+        },
+        {
+          id: "demo_2", date: `${yr}-${m}-${d}`, type: "expense", store: "スターバックス", phone: "03-1111-2222", paymentMethod: "paypay", tags: ["#カフェ"], inclusionScope: "always", memo: "休憩", totalAmount: 700,
+          items: [{ id: "it_1", name: "カフェラテ", price: 700, categoryId: "food", subCategoryId: "food_cafe" }]
+        }
+      ];
+      records = demos.concat(records);
+      saveAllStorage();
+      updateTagFilterDropdown();
+      renderDashboard();
+      showToast("サンプルデータを追加しました！");
+    }
+
+    function confirmResetAll() {
+      confirmAction("全データのリセット", "家計簿の全記録、写真、設定を初期化します。よろしいですか？", () => {
+        records = [];
+        categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        paymentMethods = JSON.parse(JSON.stringify(DEFAULT_PAYMENT_METHODS));
+        fixedExpenses = [];
+        cancelEditMode();
+        saveAllStorage();
+        loadStorageData();
+        updateTagFilterDropdown();
+        renderDashboard();
+        showToast("すべて初期化しました");
+      });
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
+    function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
+
+    function confirmAction(title, msg, onOk) {
+      document.getElementById("confirm-title").textContent = title;
+      document.getElementById("confirm-message").textContent = msg;
+      const okBtn = document.getElementById("confirm-ok-btn");
+      okBtn.onclick = () => { closeModal("confirm-modal"); if (onOk) onOk(); };
+      openModal("confirm-modal");
+    }
+
+    let aiTimerInterval = null;
+    function setAiLoading(show, title = "AI処理中...", desc = "") {
+      const modal = document.getElementById("ai-loading-modal");
+      const timerEl = document.getElementById("ai-loading-timer");
+      if (show) {
+        document.getElementById("ai-loading-title").textContent = title;
+        document.getElementById("ai-loading-desc").innerHTML = desc;
+        let sec = 0;
+        if (timerEl) timerEl.textContent = "0秒経過";
+        if (aiTimerInterval) clearInterval(aiTimerInterval);
+        aiTimerInterval = setInterval(() => {
+          sec++;
+          if (timerEl) timerEl.textContent = `${sec}秒経過`;
+        }, 1000);
+        modal.classList.remove("hidden");
+      } else {
+        if (aiTimerInterval) clearInterval(aiTimerInterval);
+        modal.classList.add("hidden");
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById("toast");
+      const icon = document.getElementById("toast-icon");
+      const txt = document.getElementById("toast-msg");
+      txt.textContent = msg;
+      icon.className = isError ? "fa-solid fa-circle-exclamation text-rose-400" : "fa-solid fa-circle-check text-teal-400";
+      toast.classList.remove("hidden");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.classList.add("hidden"); }, 2800);
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function escapeHtml(s) {
+      if (!s) return "";
+      return String(s).replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[m]);
+    }
+
+    // ★ Zaim CSV インポート処理（大項目・中項目完全対応）
     async function importZaimCSV(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      setAiLoading(true, "Zaim CSVを取り込み中...", "データを解析しています");
+      setAiLoading(true, "Zaim CSVを取り込み中...", "大項目・中項目を解析しています");
 
       try {
         const text = await readCSVFileWithEncoding(file);
@@ -2543,7 +3243,8 @@
         const dateIdx = header.findIndex(h => h.includes("日付") || h.toLowerCase() === "date");
         const methodIdx = header.findIndex(h => h.includes("方法") || h.includes("種別") || h.toLowerCase() === "type");
         const catIdx = header.findIndex(h => h === "カテゴリ" || h.includes("カテゴリ"));
-        const itemIdx = header.findIndex(h => h.includes("内訳") || h.includes("品名") || h.includes("商品"));
+        const subCatIdx = header.findIndex(h => h === "内訳" || h.includes("ジャンル") || h.includes("サブカテゴリ"));
+        const itemIdx = header.findIndex(h => h.includes("品名") || h.includes("商品") || (subCatIdx === -1 && h.includes("内訳")));
         const storeIdx = header.findIndex(h => h.includes("お店") || h.includes("店舗") || h.includes("店名"));
         const payIdx = header.findIndex(h => h.includes("支払元") || h.includes("口座") || h.includes("出金元"));
         const expIdx = header.findIndex(h => h.includes("支出") || h.includes("出金"));
@@ -2576,28 +3277,36 @@
           if (amount === 0) continue;
 
           const rawCat = catIdx !== -1 ? (row[catIdx] || "").trim() : "";
+          const rawSubCat = subCatIdx !== -1 ? (row[subCatIdx] || "").trim() : "";
           const rawItem = itemIdx !== -1 ? (row[itemIdx] || "").trim() : "";
           const rawStore = storeIdx !== -1 ? (row[storeIdx] || "").trim() : "";
           const rawPay = payIdx !== -1 ? (row[payIdx] || "").trim() : "";
           const rawMemo = memoIdx !== -1 ? (row[memoIdx] || "").trim() : "";
 
-          let catId = "other_exp";
-          if (type === "expense") {
-            const matched = categories.expense.find(c => rawCat.includes(c.name) || c.name.includes(rawCat));
-            if (matched) {
-              catId = matched.id;
-            } else if (rawCat) {
-              catId = "custom_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 4);
-              categories.expense.push({
-                id: catId,
-                name: rawCat,
-                icon: "fa-tag",
-                color: "bg-teal-100 text-teal-600"
-              });
+          // 大項目のマッピング
+          const pool = categories[type] || [];
+          let parent = pool.find(c => c.name === rawCat || rawCat.includes(c.name) || c.name.includes(rawCat));
+          if (!parent) {
+            const newId = "custom_" + Date.now().toString(36) + "_" + i;
+            parent = {
+              id: newId,
+              name: rawCat || (type === "expense" ? "その他支出" : "その他収入"),
+              icon: "fa-tag",
+              color: "bg-teal-100 text-teal-600",
+              subCategories: [{ id: newId + "_sub", name: rawSubCat || "その他" }]
+            };
+            pool.push(parent);
+          }
+
+          // 中項目のマッピング
+          let subId = parent.subCategories?.[0]?.id || "";
+          if (rawSubCat) {
+            let matchedSub = parent.subCategories.find(s => s.name === rawSubCat || rawSubCat.includes(s.name) || s.name.includes(rawSubCat));
+            if (!matchedSub) {
+              matchedSub = { id: parent.id + "_sub_" + Date.now().toString(36) + "_" + i, name: rawSubCat };
+              parent.subCategories.push(matchedSub);
             }
-          } else {
-            const matched = categories.income.find(c => rawCat.includes(c.name) || c.name.includes(rawCat));
-            catId = matched ? matched.id : "other_inc";
+            subId = matchedSub.id;
           }
 
           let payId = "cash";
@@ -2627,9 +3336,10 @@
             totalAmount: amount,
             items: [{
               id: "it_1",
-              name: rawItem || rawStore || (type === "expense" ? "支出" : "収入"),
+              name: rawItem || rawSubCat || rawStore || (type === "expense" ? "支出" : "収入"),
               price: amount,
-              categoryId: catId
+              categoryId: parent.id,
+              subCategoryId: subId
             }],
             receiptImageId: null
           };
@@ -2781,227 +3491,6 @@
       saveAllStorage();
       renderFixedExpensesList();
       showToast("固定費を削除しました");
-    }
-
-    function openCategoryManageModal() { renderCategoryManageList(); openModal("category-manage-modal"); }
-    function setCategoryManageTab(type) {
-      catManageType = type;
-      document.getElementById("cat-tab-exp").className = (type === "expense") ? "py-1.5 rounded-lg bg-white shadow-xs text-teal-800" : "py-1.5 rounded-lg text-slate-500";
-      document.getElementById("cat-tab-inc").className = (type === "income") ? "py-1.5 rounded-lg bg-white shadow-xs text-teal-800" : "py-1.5 rounded-lg text-slate-500";
-      renderCategoryManageList();
-    }
-    function renderCategoryManageList() {
-      const listEl = document.getElementById("category-manage-list");
-      listEl.innerHTML = "";
-      (categories[catManageType] || []).forEach(c => {
-        const row = document.createElement("div");
-        row.className = "flex items-center justify-between p-2 bg-slate-50 rounded-xl text-xs";
-        row.innerHTML = `<div class="flex items-center space-x-2"><span class="w-6 h-6 rounded-full ${c.color} flex items-center justify-center text-[10px]"><i class="fa-solid ${c.icon}"></i></span><span class="font-bold text-slate-700">${escapeHtml(c.name)}</span></div><div class="flex space-x-1"><button onclick="openCategoryEditForm('${c.id}')" class="p-1 text-slate-400 hover:text-teal-600"><i class="fa-solid fa-pen"></i></button><button onclick="deleteCategory('${c.id}')" class="p-1 text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button></div>`;
-        listEl.appendChild(row);
-      });
-    }
-    function openCategoryEditForm(catId) {
-      initCategoryPickers();
-      const idInput = document.getElementById("edit-cat-id");
-      const nameInput = document.getElementById("edit-cat-name");
-      const title = document.getElementById("cat-edit-title");
-      if (catId) {
-        title.textContent = "カテゴリの編集";
-        const c = categories[catManageType].find(x => x.id === catId);
-        idInput.value = catId;
-        nameInput.value = c ? c.name : "";
-        editCatIcon = c ? c.icon : ICON_PRESETS[0];
-        editCatColor = c ? c.color : COLOR_PRESETS[0].class;
-      } else {
-        title.textContent = "新規カテゴリの追加";
-        idInput.value = "";
-        nameInput.value = "";
-        editCatIcon = ICON_PRESETS[0];
-        editCatColor = COLOR_PRESETS[0].class;
-      }
-      openModal("category-edit-modal");
-    }
-    function initCategoryPickers() {
-      document.getElementById("icon-picker").innerHTML = ICON_PRESETS.map(ic => `<button type="button" onclick="editCatIcon='${ic}';showToast('アイコンを選択しました');" class="p-1.5 rounded-lg border bg-white text-slate-600 hover:bg-teal-50 flex items-center justify-center"><i class="fa-solid ${ic}"></i></button>`).join("");
-      document.getElementById("color-picker").innerHTML = COLOR_PRESETS.map(col => `<button type="button" onclick="editCatColor='${col.class}';showToast('カラーを選択しました');" class="w-6 h-6 rounded-full ${col.class} shrink-0 border-2 border-transparent hover:scale-110 transition"></button>`).join("");
-    }
-    function saveCategoryEdit() {
-      const name = document.getElementById("edit-cat-name").value.trim();
-      const id = document.getElementById("edit-cat-id").value;
-      if (!name) return;
-      if (id) {
-        const c = categories[catManageType].find(x => x.id === id);
-        if (c) { c.name = name; c.icon = editCatIcon; c.color = editCatColor; }
-      } else {
-        categories[catManageType].push({ id: "custom_" + Date.now().toString(36), name, icon: editCatIcon, color: editCatColor });
-      }
-      saveAllStorage();
-      closeModal("category-edit-modal");
-      renderCategoryManageList();
-      renderSimpleCategoryGrid();
-      showToast("カテゴリを保存しました");
-    }
-    function deleteCategory(id) {
-      if (categories[catManageType].length <= 1) { showToast("最低1つのカテゴリが必要です", true); return; }
-      categories[catManageType] = categories[catManageType].filter(c => c.id !== id);
-      saveAllStorage();
-      renderCategoryManageList();
-      renderSimpleCategoryGrid();
-    }
-
-    function saveApiKey() {
-      const k = document.getElementById("setting-api-key").value.trim();
-      appConfig.geminiApiKey = k;
-      localStorage.setItem('gemini_api_key', k);
-      saveAllStorage();
-      showToast("Gemini APIキーを保存しました！");
-    }
-    function toggleKeyVisibility() {
-      const el = document.getElementById("setting-api-key");
-      el.classList.toggle("masked-key");
-    }
-
-    function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "2.8", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
-      downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
-      showToast("完全バックアップJSONを出力しました");
-    }
-    function importFullBackupJSON(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const imp = JSON.parse(e.target.result);
-          if (imp.records) records = imp.records;
-          if (imp.categories) categories = imp.categories;
-          if (imp.paymentMethods) paymentMethods = imp.paymentMethods;
-          if (imp.fixedExpenses) fixedExpenses = imp.fixedExpenses;
-          if (imp.config) appConfig = imp.config;
-          saveAllStorage();
-          loadStorageData();
-          updateTagFilterDropdown();
-          renderDashboard();
-          showToast("バックアップから復元しました！");
-        } catch { showToast("復元に失敗しました", true); }
-      };
-      reader.readAsText(file);
-      event.target.value = "";
-    }
-    function exportStandardCSV() {
-      if (records.length === 0) { showToast("データがありません", true); return; }
-      let csv = "\uFEFFid,日付,種別,店名,電話番号,支払元,集計対象,タグ,メモ,品目名,品目カテゴリ,金額\n";
-      records.forEach(r => {
-        (r.items || []).forEach(it => {
-          csv += `"${r.id}","${r.date}","${r.type}","${(r.store||'').replace(/"/g, '""')}","${r.phone||''}","${r.paymentMethod}","${r.inclusionScope}","${(r.tags||[]).join(' ')}","${(r.memo||'').replace(/"/g, '""')}","${(it.name||'').replace(/"/g, '""')}","${it.categoryId}",${safeParseInt(it.price)}\n`;
-        });
-      });
-      downloadFile(csv, `家計簿明細_${getTodayISO()}.csv`, "text/csv;charset=utf-8;");
-      showToast("CSVファイルを出力しました");
-    }
-
-    function loadDemoData() {
-      const now = new Date();
-      const yr = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const d = String(now.getDate()).padStart(2, '0');
-      const demos = [
-        {
-          id: "demo_1", date: `${yr}-${m}-${d}`, type: "expense", store: "マツモトキヨシ 渋谷店", phone: "03-3461-1234", paymentMethod: "main_card", tags: ["#日用品"], inclusionScope: "always", memo: "ドラッグストアで食品と薬をまとめて購入", totalAmount: 3260,
-          items: [
-            { id: "it_1", name: "総合かぜ薬 パブロン", price: 1480, categoryId: "medical" },
-            { id: "it_2", name: "お茶 2L × 2本", price: 360, categoryId: "food" },
-            { id: "it_3", name: "シャンプー 詰替", price: 580, categoryId: "daily" },
-            { id: "it_4", name: "目薬 ロート", price: 840, categoryId: "medical" }
-          ]
-        },
-        {
-          id: "demo_2", date: `${yr}-${m}-${d}`, type: "expense", store: "ライフ スーパー", phone: "03-5555-6666", paymentMethod: "paypay", tags: ["#外食"], inclusionScope: "always", memo: "夕食食材", totalAmount: 2480,
-          items: [{ id: "it_1", name: "生鮮食品・肉・野菜", price: 2480, categoryId: "food" }]
-        }
-      ];
-      records = demos.concat(records);
-      saveAllStorage();
-      updateTagFilterDropdown();
-      renderDashboard();
-      showToast("サンプルデータを追加しました！");
-    }
-
-    function confirmResetAll() {
-      confirmAction("全データのリセット", "家計簿の全記録、写真、設定を初期化します。よろしいですか？", () => {
-        records = [];
-        categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-        paymentMethods = JSON.parse(JSON.stringify(DEFAULT_PAYMENT_METHODS));
-        fixedExpenses = [];
-        cancelEditMode();
-        saveAllStorage();
-        loadStorageData();
-        updateTagFilterDropdown();
-        renderDashboard();
-        showToast("すべて初期化しました");
-      });
-    }
-
-    function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
-    function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
-
-    function confirmAction(title, msg, onOk) {
-      document.getElementById("confirm-title").textContent = title;
-      document.getElementById("confirm-message").textContent = msg;
-      const okBtn = document.getElementById("confirm-ok-btn");
-      okBtn.onclick = () => { closeModal("confirm-modal"); if (onOk) onOk(); };
-      openModal("confirm-modal");
-    }
-
-    let aiTimerInterval = null;
-    function setAiLoading(show, title = "AI処理中...", desc = "") {
-      const modal = document.getElementById("ai-loading-modal");
-      const timerEl = document.getElementById("ai-loading-timer");
-      if (show) {
-        document.getElementById("ai-loading-title").textContent = title;
-        document.getElementById("ai-loading-desc").innerHTML = desc;
-        let sec = 0;
-        if (timerEl) timerEl.textContent = "0秒経過";
-        if (aiTimerInterval) clearInterval(aiTimerInterval);
-        aiTimerInterval = setInterval(() => {
-          sec++;
-          if (timerEl) timerEl.textContent = `${sec}秒経過`;
-        }, 1000);
-        modal.classList.remove("hidden");
-      } else {
-        if (aiTimerInterval) clearInterval(aiTimerInterval);
-        modal.classList.add("hidden");
-      }
-    }
-
-    let toastTimer = null;
-    function showToast(msg, isError = false) {
-      const toast = document.getElementById("toast");
-      const icon = document.getElementById("toast-icon");
-      const txt = document.getElementById("toast-msg");
-      txt.textContent = msg;
-      icon.className = isError ? "fa-solid fa-circle-exclamation text-rose-400" : "fa-solid fa-circle-check text-teal-400";
-      toast.classList.remove("hidden");
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => { toast.classList.add("hidden"); }, 2800);
-    }
-
-    function downloadFile(content, fileName, mimeType) {
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-    function escapeHtml(s) {
-      if (!s) return "";
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-      })[m]);
     }
   </script>
 </body>
