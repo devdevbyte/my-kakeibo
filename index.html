@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>家計簿</title>
 
-  <!-- 検索エンジン除外（インデックス・キャッシュ防止） -->
+  <!-- 検索エンジン除外 -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
 
@@ -13,14 +13,14 @@
   <meta name="theme-color" content="#0f766e">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="apple-touch-icon" href="[https://placehold.co/192x192/0f766e/ffffff?text=家計簿](https://placehold.co/192x192/0f766e/ffffff?text=家計簿)">
+  <link rel="apple-touch-icon" href="https://placehold.co/192x192/0f766e/ffffff?text=家計簿">
 
   <!-- Tailwind CSS CDN -->
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome 6 Icons -->
-  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Chart.js CDN -->
-  <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body {
@@ -46,7 +46,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 flex justify-center min-h-screen">
 
-  <!-- アプリメイン枠（スマホ縦持ち最適化） -->
+  <!-- アプリメイン枠 -->
   <div class="w-full max-w-md h-[100dvh] flex flex-col bg-white shadow-2xl relative overflow-hidden">
 
     <!-- 1. トップヘッダー -->
@@ -1331,7 +1331,7 @@
 
       setAiLoading(true, "店舗情報を検索中...", `「${q}」を照会しています`);
       try {
-        const promptText = `電話番号または店名「${q}」から正式店舗名を判定し、JSONのみで返してください。\n{"storeName": "正式店舗名"}`;
+        const promptText = `電話番号または店名「${q}」から正式店舗名を1つ判定し、JSONのみで返してください。\n{"storeName": "正式店舗名"}`;
         const payload = {
           contents: [{ parts: [{ text: promptText }] }],
           generationConfig: {
@@ -1437,7 +1437,7 @@
     }
 
     // ==========================================
-    // ★ 構文エラー徹底耐性＋超高速レシート解析
+    // レシート解析（構文エラー除去 & 3.1 Flash-Lite 優先）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1465,7 +1465,7 @@
         document.getElementById("attached-image-preview-box").classList.remove("hidden");
 
         document.getElementById("ai-loading-title").textContent = "② Google AIへ通信中...";
-        document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>文字出力ストリームを待機中`;
+        document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>AIからの即時応答を待っています`;
 
         const availableCats = categories.expense.map(c => c.id).join(", ");
         
@@ -1496,7 +1496,6 @@
         };
 
         const t2 = performance.now();
-        // 6秒を出した爆速モデル gemini-3.1-flash-lite を優先
         const { res, usedModel } = await callGeminiAPIWithFallback(apiKey, payload);
         const t3 = performance.now();
         const netSec = ((t3 - t2) / 1000).toFixed(1);
@@ -1508,12 +1507,9 @@
         const diagText = `[診断] モデル:${usedModel} | 通信:${netSec}秒 | 出力:${outTokens} | 画像:${kbSize}KB`;
 
         let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-        
-        // マークダウンのコードブロック除去とJSON部分の切り抜き
         rawText = cleanJsonText(rawText);
         const parsed = JSON.parse(rawText);
 
-        // 短縮JSONの展開（配列形式とオブジェクト形式の両対応）
         let items = [];
         if (Array.isArray(parsed.i)) {
           items = parsed.i.map(item => {
@@ -1553,7 +1549,6 @@
       }
     }
 
-    // AIの出力からマークダウン枠（```json ... ```）や前後の余計な文字を完全除去する関数
     function cleanJsonText(text) {
       if (!text) return "{}";
       let cleaned = text.trim();
@@ -1566,14 +1561,13 @@
       return cleaned;
     }
 
-    // OCR最速モデル（3.1 Flash-Lite）→ 安定モデル（3.8 Flash）の自動選択通信
     async function callGeminiAPIWithFallback(apiKey, payload) {
       const models = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
       let lastError = null;
 
       for (const m of models) {
         try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){m}:generateContent?key=${encodeURIComponent(apiKey)}`;
           const response = await fetch(url, {
             method: "POST",
             headers: {
