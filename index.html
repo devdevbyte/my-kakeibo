@@ -123,7 +123,7 @@
               <i class="fa-solid fa-camera"></i>
             </div>
             <div>
-              <div class="text-xs font-bold">高速 AI レシート読取</div>
+              <div class="text-xs font-bold">レシート読取 (Gemini AI)</div>
               <div class="text-[10px] text-teal-100">品目・個別カテゴリ・金額を一括自動入力</div>
             </div>
           </div>
@@ -487,10 +487,10 @@
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-key text-teal-600"></i>
-            <span>Gemini APIキー設定 (超高速レシートOCR)</span>
+            <span>Gemini APIキー設定 (レシートOCR用)</span>
           </div>
           <p class="text-[11px] text-slate-500 leading-relaxed">
-            Google AI Studioで発行したキーを入力してください。端末内（LocalStorage）にのみ安全に保存されます。
+            Google AI Studioで発行したキーを入力してください。端末内（LocalStorage）にのみ保存されます。
           </p>
           <input type="password" id="setting-api-key" placeholder="AQ... または AIzaSy..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-mono">
           <div class="flex space-x-2">
@@ -569,6 +569,8 @@
             <i class="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
+        <!-- 診断結果バッジ -->
+        <div id="scan-diag-badge" class="text-[10px] font-mono bg-teal-50 text-teal-800 px-2.5 py-1.5 rounded-lg border border-teal-200"></div>
         <div class="overflow-y-auto space-y-3 flex-1 pr-1 text-xs">
           <div class="bg-slate-50 p-3 rounded-xl space-y-1.5">
             <div class="flex justify-between"><span class="text-slate-400">店名:</span><span id="scan-res-store" class="font-bold text-slate-700"></span></div>
@@ -735,14 +737,12 @@
       </div>
     </div>
 
-    <!-- AI処理中ローディングモーダル（タイマー表示付き） -->
-    <div id="ai-loading-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white px-6">
+    <!-- AI処理中ローディングモーダル（工程・秒数表示付き） -->
+    <div id="ai-loading-modal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white px-6">
       <div class="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full animate-spin mb-3"></div>
       <div id="ai-loading-title" class="text-sm font-bold mb-1">AI処理中...</div>
       <div id="ai-loading-timer" class="text-xs font-mono text-teal-300 font-bold mb-2">0秒経過</div>
-      <p id="ai-loading-desc" class="text-xs text-slate-300 text-center leading-relaxed">
-        レシートを解析しています。<br>数秒お待ちください。
-      </p>
+      <p id="ai-loading-desc" class="text-xs text-slate-300 text-center leading-relaxed"></p>
     </div>
 
     <!-- トースト通知 -->
@@ -1306,7 +1306,6 @@
       return total;
     }
 
-    // 店舗検索（即座に応答）
     async function searchStore() {
       const q = document.getElementById("form-store").value.trim();
       if (!q) {
@@ -1334,12 +1333,14 @@
       setAiLoading(true, "店舗情報を検索中...", `「${q}」を照会しています`);
       try {
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const promptText = `電話番号または店名「${q}」から正式店舗名を判定し、以下のJSONのみで返してください。余計な解説は不要です。\n{"storeName": "正式店舗名"}`;
+        const promptText = `電話番号または店名「${q}」から正式店舗名を1つだけ判定し、以下のJSONのみで即答してください。\n{"storeName": "正式店舗名"}`;
 
         const payload = {
           contents: [{ parts: [{ text: promptText }] }],
           generationConfig: {
             responseMimeType: "application/json",
+            temperature: 0,
+            thinkingConfig: { thinkingBudget: 0 },
             maxOutputTokens: 100
           }
         };
@@ -1447,7 +1448,7 @@
     }
 
     // ==========================================
-    // ★ 爆速レシート撮影 & 解析（responseSchema全廃＋画像軽量化）
+    // ★ 根本対策版：レシート撮影（短辺基準鮮明化＋検算禁止＋工程診断）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1461,26 +1462,34 @@
         return;
       }
 
-      setAiLoading(true, "AIレシート解析中...", "文字認識と品目分類を行っています");
+      const t0 = performance.now();
+      setAiLoading(true, "① 画像を最適化中...", "文字を鮮明にリサイズしています");
 
       try {
-        // 画像を長辺800px、圧縮0.65に最適化（約100KB前後で転送が一瞬）
-        const base64Data = await compressImageToBase64(file, 800);
-        attachedImageBase64 = "data:image/jpeg;base64," + base64Data;
+        // 縦長レシートでも文字が潰れないよう「短辺（横幅）900px基準」で鮮明化
+        const base64Data = await compressReceiptImage(file, 900);
+        const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
+        const t1 = performance.now();
+        const compressSec = ((t1 - t0) / 1000).toFixed(1);
 
+        attachedImageBase64 = "data:image/jpeg;base64," + base64Data;
         document.getElementById("attached-image-thumb").src = attachedImageBase64;
         document.getElementById("attached-image-preview-box").classList.remove("hidden");
+
+        document.getElementById("ai-loading-title").textContent = "② Google AIへ通信中...";
+        document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>AIからの応答を待っています`;
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
         const availableCats = categories.expense.map(c => `${c.id}:${c.name}`).join(", ");
 
         const promptText = `
-添付画像はレシートです。思考や余計な推論は一切不要です。直接以下のJSONフォーマットのみを出力してください。マークダウンや説明文は絶対に含めないでください。
+レシート画像から文字を読み取り、以下のJSONのみを即座に出力してください。
+【厳守ルール（高速化のため）】
+1. 消費税の計算や、品目の合計と支払合計が一致するかの検算・逆算は絶対に行わないでください。
+2. 読めない文字や曖昧な箇所は推測せず、見えた文字だけをそのまま出力してください。
+3. カテゴリIDは [${availableCats}] から選んでください（医薬品はmedical、食品はfood、日用品はdaily）。日付不明時は "${getTodayISO()}"。
 
-{"store":"店名","phone":"電話番号","date":"YYYY-MM-DD","total_amount":合計金額,"items":[{"name":"品目名","price":金額,"categoryId":"カテゴリID"}]}
-
-利用可能なカテゴリID: [${availableCats}]
-ドラッグストア等の場合、医薬品は"medical"、食品は"food"、日用品は"daily"を割り当ててください。日付不明時は"${getTodayISO()}"。
+{"store":"店名","phone":"電話番号","date":"YYYY-MM-DD","total_amount":0,"items":[{"name":"品名","price":0,"categoryId":"food"}]}
         `.trim();
 
         const payload = {
@@ -1493,10 +1502,12 @@
           }],
           generationConfig: {
             responseMimeType: "application/json",
-            maxOutputTokens: 2048
+            temperature: 0,
+            thinkingConfig: { thinkingBudget: 0 }
           }
         };
 
+        const t2 = performance.now();
         const res = await fetch(apiUrl, {
           method: "POST",
           headers: {
@@ -1513,11 +1524,20 @@
         }
 
         const json = await res.json();
+        const t3 = performance.now();
+        const netSec = ((t3 - t2) / 1000).toFixed(1);
+
+        // トークン消費量の診断データを取得
+        const usage = json.usageMetadata || {};
+        const thoughtTokens = usage.thoughtsTokenCount || 0;
+        const outTokens = usage.candidatesTokenCount || 0;
+        const diagText = `[診断] 通信:${netSec}秒 | 思考トークン:${thoughtTokens} | 出力:${outTokens} | 画像:${kbSize}KB`;
+
         const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         const parsed = JSON.parse(rawText);
 
         pendingScanResult = parsed;
-        showScannedReceiptModal(parsed);
+        showScannedReceiptModal(parsed, diagText);
 
       } catch (err) {
         console.error(err);
@@ -1533,7 +1553,8 @@
       }
     }
 
-    function compressImageToBase64(file, maxDimension) {
+    // 縦長レシートでも横幅（短辺）が潰れないリサイズ関数
+    function compressReceiptImage(file, targetShortSide = 900) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1541,17 +1562,25 @@
           img.onload = () => {
             let w = img.width;
             let h = img.height;
-            if (w > h) {
-              if (w > maxDimension) { h = Math.round((h * maxDimension) / w); w = maxDimension; }
-            } else {
-              if (h > maxDimension) { w = Math.round((w * maxDimension) / h); h = maxDimension; }
+            const shortSide = Math.min(w, h);
+            if (shortSide > targetShortSide) {
+              const scale = targetShortSide / shortSide;
+              w = Math.round(w * scale);
+              h = Math.round(h * scale);
+            }
+            // 長辺が極端に長すぎる場合のみ上限2200pxでキャップ
+            const longSide = Math.max(w, h);
+            if (longSide > 2200) {
+              const scale = 2200 / longSide;
+              w = Math.round(w * scale);
+              h = Math.round(h * scale);
             }
             const canvas = document.createElement("canvas");
             canvas.width = w;
             canvas.height = h;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL("image/jpeg", 0.65).split(",")[1]);
+            resolve(canvas.toDataURL("image/jpeg", 0.78).split(",")[1]);
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -1561,7 +1590,12 @@
       });
     }
 
-    function showScannedReceiptModal(data) {
+    function showScannedReceiptModal(data, diagText = "") {
+      const diagEl = document.getElementById("scan-diag-badge");
+      if (diagEl) {
+        diagEl.textContent = diagText;
+        diagEl.classList.toggle("hidden", !diagText);
+      }
       document.getElementById("scan-res-store").textContent = data.store || "不明";
       document.getElementById("scan-res-phone").textContent = data.phone || "記載なし";
       document.getElementById("scan-res-date").textContent = data.date || getTodayISO();
