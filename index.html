@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v2.7</title>
+  <title>家計簿 v2.8</title>
 
   <!-- 検索エンジン除外 -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
@@ -65,7 +65,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v2.7</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v2.8</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -77,7 +77,8 @@
 
       <!-- 1. ダッシュボード・入力 タブ -->
       <section id="tab-input" class="p-4 space-y-4 fade-in">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+        <!-- 予算カード -->
+        <div id="dash-budget-card" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
@@ -116,6 +117,22 @@
           </div>
         </div>
 
+        <!-- ★ 編集モード中に表示される通知バナー -->
+        <div id="edit-mode-banner" class="hidden bg-amber-500 text-white p-3.5 rounded-2xl shadow-md flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black">過去の明細を編集中</div>
+              <div id="edit-mode-target-label" class="text-[10px] text-amber-100">内容を変更して上書き保存できます</div>
+            </div>
+          </div>
+          <button type="button" onclick="cancelEditMode()" class="bg-white text-amber-800 font-bold text-xs px-3 py-1.5 rounded-xl shadow active:scale-95 transition shrink-0">
+            編集をやめる
+          </button>
+        </div>
+
         <div class="grid grid-cols-2 gap-2 p-1 bg-slate-200 rounded-xl">
           <button id="type-expense-btn" onclick="setInputType('expense')" class="py-2 text-center font-bold text-xs rounded-lg bg-teal-700 text-white shadow-xs transition">支出</button>
           <button id="type-income-btn" onclick="setInputType('income')" class="py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition">収入</button>
@@ -135,7 +152,7 @@
           <button onclick="document.getElementById('receipt-input').click()" class="bg-white text-teal-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow active:scale-95 transition shrink-0">撮影する</button>
         </div>
 
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+        <div id="form-card-container" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">日付</label>
@@ -178,14 +195,23 @@
             </div>
           </div>
 
-          <div>
-            <label class="text-[10px] font-bold text-slate-400 block mb-1">タグ (任意)</label>
-            <input type="text" id="form-tags" autocomplete="off" placeholder="#旅行 #まとめ買い" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 mb-1.5">
-            <div class="flex flex-wrap gap-1">
-              <button type="button" onclick="addTagToInput('#旅行')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#旅行</button>
-              <button type="button" onclick="addTagToInput('#外食')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#外食</button>
-              <button type="button" onclick="addTagToInput('#イベント')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#イベント</button>
-              <button type="button" onclick="addTagToInput('#日用品')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#日用品</button>
+          <!-- タグ & メモ入力 -->
+          <div class="space-y-2.5">
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 block mb-1">タグ (スペース区切りで複数可・#は自動付与)</label>
+              <input type="text" id="form-tags" autocomplete="off" placeholder="#旅行 #まとめ買い" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 mb-1.5">
+              <div class="flex flex-wrap gap-1">
+                <button type="button" onclick="addTagToInput('#旅行')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#旅行</button>
+                <button type="button" onclick="addTagToInput('#外食')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#外食</button>
+                <button type="button" onclick="addTagToInput('#イベント')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#イベント</button>
+                <button type="button" onclick="addTagToInput('#日用品')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#日用品</button>
+                <button type="button" onclick="addTagToInput('#医療費')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#医療費</button>
+                <button type="button" onclick="addTagToInput('#特別費')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#特別費</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 block mb-1">一言メモ (任意)</label>
+              <input type="text" id="form-memo" autocomplete="off" placeholder="例: 家族との夕食、ポイント利用など" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
             </div>
           </div>
 
@@ -214,7 +240,7 @@
 
             <div id="split-input-container" class="hidden space-y-3">
               <div class="text-[11px] text-slate-500 bg-teal-50 p-2 rounded-xl border border-teal-100">
-                支払合計と品目合計に差がある場合（外税や読み取り漏れ）、差額調整行が自動追加されます。
+                品目ごとの金額やカテゴリを個別に修正・追加できます。
               </div>
               <div id="split-items-list" class="space-y-2"></div>
               <div class="flex justify-between items-center pt-1">
@@ -238,16 +264,20 @@
             <button type="button" onclick="removeAttachedImage()" class="text-rose-500 hover:text-rose-700 text-xs font-bold">削除</button>
           </div>
 
-          <button type="button" onclick="saveRecord()" class="w-full py-3.5 bg-teal-700 hover:bg-teal-800 active:scale-[0.98] text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center space-x-2">
-            <i class="fa-solid fa-check"></i>
-            <span>保存する</span>
-          </button>
+          <div class="space-y-2">
+            <button type="button" id="save-record-btn" onclick="saveRecord()" class="w-full py-3.5 bg-teal-700 hover:bg-teal-800 active:scale-[0.98] text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-check"></i>
+              <span id="save-record-btn-text">保存する</span>
+            </button>
+            <button type="button" id="cancel-edit-btn" onclick="cancelEditMode()" class="hidden w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
+              編集をキャンセルして新規入力に戻る
+            </button>
+          </div>
         </div>
       </section>
 
       <!-- 2. 履歴 タブ -->
       <section id="tab-history" class="p-4 space-y-4 hidden fade-in">
-        <!-- 表示モード切替（月度別 / 全期間すべて表示） -->
         <div class="flex items-center justify-between bg-white px-3 py-2.5 rounded-2xl shadow-sm border border-slate-100">
           <button id="hist-prev-btn" onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"><i class="fa-solid fa-chevron-left text-xs"></i></button>
           <div class="text-center flex-1 px-2">
@@ -289,6 +319,8 @@
             <option value="all">すべてのタグ</option>
           </select>
         </div>
+
+        <div class="text-[10px] text-slate-400 text-right px-1">※明細をタップするとタグ付け・内容修正ができます</div>
 
         <div id="history-container" class="space-y-3"></div>
       </section>
@@ -547,21 +579,28 @@
             <span>このまま即保存する（履歴へ直行）</span>
           </button>
           <button onclick="applyScannedReceiptToForm()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
-            フォームに反映して手直しする
+            フォームに反映して手直し・タグ付けする
           </button>
         </div>
       </div>
     </div>
 
+    <!-- ★ B. 明細詳細・クイックタグ付け＆フル編集モーダル -->
     <div id="detail-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col space-y-3">
+      <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[88vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
-          <span class="font-bold text-slate-800 text-sm">明細詳細</span>
+          <span class="font-bold text-slate-800 text-sm">明細の確認・修正</span>
           <button onclick="closeModal('detail-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <div id="detail-modal-body" class="overflow-y-auto flex-1 pr-1 space-y-3 text-xs"></div>
-        <div class="pt-2">
-          <button id="detail-modal-delete-btn" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition">この明細を削除</button>
+        <div class="pt-2 border-t border-slate-100 space-y-2">
+          <button id="detail-modal-edit-btn" class="w-full py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>すべての項目（金額・品目・日付等）を修正する</span>
+          </button>
+          <button id="detail-modal-delete-btn" class="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition">
+            この明細を削除
+          </button>
         </div>
       </div>
     </div>
@@ -761,6 +800,9 @@
     let pendingScanResult = null;
     let isHistoryAllMode = false;
 
+    // ★ 編集モード管理用変数
+    let editingRecordId = null;
+
     let records = [];
     let categories = null;
     let paymentMethods = null;
@@ -790,21 +832,30 @@
       return isNaN(num) ? 0 : num;
     }
 
+    // タグ文字列の整形（#がなくても自動で先頭に#を付与）
+    function parseTagsInput(rawStr) {
+      if (!rawStr) return [];
+      const parts = String(rawStr).split(/[\s,、]+/).map(t => t.trim()).filter(Boolean);
+      const unique = [];
+      parts.forEach(t => {
+        const tag = t.startsWith("#") ? t : "#" + t;
+        if (tag.length > 1 && !unique.includes(tag)) unique.push(tag);
+      });
+      return unique;
+    }
+
     function getTodayISO() {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
-    // ★ レシート日付の完全正規化＆AIの西暦年ズレ（2024/2025年問題）自動補正関数
     function normalizeReceiptDate(rawStr, fixYearDrift = true) {
       const today = new Date();
       const curYear = today.getFullYear();
       if (!rawStr) return getTodayISO();
 
       let s = String(rawStr).trim();
-      // 全角数字を半角に変換
       s = s.replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
-      // 令和表記 (R8.11.8 / 令和8年11月8日 等) の対応
       const reiwaMatch = s.match(/(?:令和|R|r)\s*(\d{1,2})\D+(\d{1,2})\D+(\d{1,2})/);
       if (reiwaMatch) {
         const y = 2018 + parseInt(reiwaMatch[1], 10);
@@ -828,7 +879,6 @@
         d = parseInt(nums[1], 10);
       }
 
-      // AIが年記載なしレシートを学習時期(2023〜2025年)で出力してしまった場合、今年(2026年)へ補正
       if (fixYearDrift && y >= 2020 && y < curYear) {
         y = curYear;
       }
@@ -840,7 +890,6 @@
       return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     }
 
-    // 文字列日付からローカル時刻のDateオブジェクトを安全に生成
     function parseLocalDate(dateStr) {
       const norm = normalizeReceiptDate(dateStr, false);
       const parts = norm.split("-");
@@ -895,6 +944,7 @@
       initFormDefaults();
       renderDashboard();
       renderPaymentMethodDropdowns();
+      updateTagFilterDropdown();
       renderSimpleCategoryGrid();
       renderSettingsTab();
     });
@@ -908,7 +958,6 @@
         const cfg = JSON.parse(localStorage.getItem("kakeibo_config") || "{}");
         appConfig = Object.assign(appConfig, cfg);
 
-        // ★ 過去に保存されて年ズレ・書式エラーで消えていたレシート記録を自動修復
         let repaired = false;
         records.forEach(r => {
           const isZaim = String(r.id || "").startsWith("zaim_");
@@ -1150,7 +1199,10 @@
       });
 
       if (tabId === "input") renderDashboard();
-      if (tabId === "history") renderHistoryList();
+      if (tabId === "history") {
+        updateTagFilterDropdown();
+        renderHistoryList();
+      }
       if (tabId === "analytics") renderAnalytics();
       if (tabId === "settings") renderSettingsTab();
     }
@@ -1216,12 +1268,16 @@
         expBtn.className = "py-2 text-center font-bold text-xs rounded-lg bg-teal-700 text-white shadow-xs transition";
         incBtn.className = "py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition";
         scanBanner.classList.remove("hidden");
-        selectedSimpleCategoryId = categories.expense[0]?.id || "food";
+        if (!categories.expense.some(c => c.id === selectedSimpleCategoryId)) {
+          selectedSimpleCategoryId = categories.expense[0]?.id || "food";
+        }
       } else {
         incBtn.className = "py-2 text-center font-bold text-xs rounded-lg bg-emerald-600 text-white shadow-xs transition";
         expBtn.className = "py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition";
         scanBanner.classList.add("hidden");
-        selectedSimpleCategoryId = categories.income[0]?.id || "salary";
+        if (!categories.income.some(c => c.id === selectedSimpleCategoryId)) {
+          selectedSimpleCategoryId = categories.income[0]?.id || "salary";
+        }
       }
       renderSimpleCategoryGrid();
     }
@@ -1269,8 +1325,21 @@
 
     function addTagToInput(tag) {
       const input = document.getElementById("form-tags");
-      if (!input.value.includes(tag)) {
-        input.value = (input.value.trim() + " " + tag).trim();
+      const currentTags = parseTagsInput(input.value);
+      if (!currentTags.includes(tag)) {
+        currentTags.push(tag);
+        input.value = currentTags.join(" ");
+      }
+    }
+
+    // 詳細モーダル内でのクイックタグ追加ボタン用
+    function addTagToModalInput(tag) {
+      const input = document.getElementById("modal-quick-tags");
+      if (!input) return;
+      const currentTags = parseTagsInput(input.value);
+      if (!currentTags.includes(tag)) {
+        currentTags.push(tag);
+        input.value = currentTags.join(" ");
       }
     }
 
@@ -1305,8 +1374,9 @@
       row.id = rowId;
       row.className = "flex items-center space-x-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs";
 
-      const validCat = (categories.expense || []).some(c => c.id === catId) ? catId : "food";
-      const catOptions = (categories.expense || []).map(c => `
+      const catPool = categories[inputType] || categories.expense || [];
+      const validCat = catPool.some(c => c.id === catId) ? catId : (catPool[0]?.id || "food");
+      const catOptions = catPool.map(c => `
         <option value="${c.id}" ${c.id === validCat ? 'selected' : ''}>${c.name}</option>
       `).join("");
 
@@ -1407,13 +1477,128 @@
       }
     }
 
-    // ★ 確実な保存と履歴への即時同期
+    // ==========================================
+    // ★ 履歴明細を入力フォームへ呼び出してフル編集する機能
+    // ==========================================
+    async function startEditRecord(recId) {
+      const rec = records.find(r => r.id === recId);
+      if (!rec) return;
+
+      closeModal("detail-modal");
+      editingRecordId = rec.id;
+
+      // 編集モードUIの表示切替
+      document.getElementById("edit-mode-banner").classList.remove("hidden");
+      document.getElementById("edit-mode-target-label").textContent = `${rec.date}「${rec.store}」を編集中`;
+      document.getElementById("form-card-container").classList.add("ring-2", "ring-amber-400");
+      document.getElementById("save-record-btn").className = "w-full py-3.5 bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center space-x-2";
+      document.getElementById("save-record-btn-text").textContent = "変更を上書き保存する";
+      document.getElementById("cancel-edit-btn").classList.remove("hidden");
+
+      // 各フィールドの復元
+      setInputType(rec.type || "expense");
+      document.getElementById("form-date").value = normalizeReceiptDate(rec.date, false);
+      document.getElementById("form-store").value = rec.store || "";
+      document.getElementById("form-payment-method").value = rec.paymentMethod || "cash";
+      setInclusionScope(rec.inclusionScope || "always");
+      document.getElementById("form-tags").value = (rec.tags || []).join(" ");
+      document.getElementById("form-memo").value = rec.memo || "";
+
+      const totalAmt = safeParseInt(rec.totalAmount);
+      document.getElementById("simple-amount").value = totalAmt > 0 ? totalAmt : "";
+
+      // 品目・スプリット状態の復元
+      const splitList = document.getElementById("split-items-list");
+      splitList.innerHTML = "";
+      if (Array.isArray(rec.items) && rec.items.length > 1) {
+        setSplitMode(true);
+        rec.items.forEach(it => {
+          addSplitItemRow(it.name, it.price, it.categoryId);
+        });
+      } else if (Array.isArray(rec.items) && rec.items.length === 1) {
+        const singleItem = rec.items[0];
+        selectedSimpleCategoryId = singleItem.categoryId || (rec.type === "income" ? "salary" : "food");
+        renderSimpleCategoryGrid();
+        // 品目名が店名と異なる場合はスプリットとして展開できるようにセットしておく
+        if (singleItem.name && singleItem.name !== rec.store) {
+          setSplitMode(true);
+          addSplitItemRow(singleItem.name, singleItem.price, singleItem.categoryId);
+        } else {
+          setSplitMode(false);
+        }
+      } else {
+        setSplitMode(false);
+      }
+
+      // 添付写真の復元
+      if (rec.receiptImageId) {
+        const photoData = await getPhotoFromDB(rec.receiptImageId);
+        if (photoData) {
+          attachedImageBase64 = photoData;
+          document.getElementById("attached-image-thumb").src = photoData;
+          document.getElementById("attached-image-preview-box").classList.remove("hidden");
+        } else {
+          removeAttachedImage();
+        }
+      } else {
+        removeAttachedImage();
+      }
+
+      switchTab("input");
+      document.querySelector("main").scrollTo({ top: 0, behavior: "smooth" });
+      showToast("明細を入力フォームに読み込みました");
+    }
+
+    function cancelEditMode() {
+      editingRecordId = null;
+      document.getElementById("edit-mode-banner").classList.add("hidden");
+      document.getElementById("form-card-container").classList.remove("ring-2", "ring-amber-400");
+      document.getElementById("save-record-btn").className = "w-full py-3.5 bg-teal-700 hover:bg-teal-800 active:scale-[0.98] text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center space-x-2";
+      document.getElementById("save-record-btn-text").textContent = "保存する";
+      document.getElementById("cancel-edit-btn").classList.add("hidden");
+
+      document.getElementById("simple-amount").value = "";
+      document.getElementById("form-store").value = "";
+      document.getElementById("form-tags").value = "";
+      document.getElementById("form-memo").value = "";
+      document.getElementById("form-date").value = getTodayISO();
+      removeAttachedImage();
+      pendingScanResult = null;
+      document.getElementById("split-items-list").innerHTML = "";
+      setSplitMode(false);
+      setInclusionScope("always");
+    }
+
+    // ★ 詳細モーダル内でのクイックタグ＆メモ即保存機能
+    function saveQuickTagsAndMemo(recId) {
+      const rec = records.find(r => r.id === recId);
+      if (!rec) return;
+
+      const tagInput = document.getElementById("modal-quick-tags");
+      const memoInput = document.getElementById("modal-quick-memo");
+
+      if (tagInput) {
+        rec.tags = parseTagsInput(tagInput.value);
+      }
+      if (memoInput) {
+        rec.memo = memoInput.value.trim();
+      }
+
+      saveAllStorage();
+      updateTagFilterDropdown();
+      renderHistoryList();
+      closeModal("detail-modal");
+      showToast("タグ・メモを更新しました！");
+    }
+
+    // ★ 新規保存 & 上書き保存の両対応
     async function saveRecord() {
       const rawDate = document.getElementById("form-date").value || getTodayISO();
       const date = normalizeReceiptDate(rawDate, false);
       const store = document.getElementById("form-store").value.trim() || (inputType === "expense" ? "お買い物" : "収入");
       const paymentMethod = document.getElementById("form-payment-method").value || "cash";
-      const tags = document.getElementById("form-tags").value.split(/\s+/).filter(t => t.startsWith("#"));
+      const tags = parseTagsInput(document.getElementById("form-tags").value);
+      const memo = document.getElementById("form-memo").value.trim();
 
       let items = [];
       let totalAmount = 0;
@@ -1449,50 +1634,61 @@
         }
       }
 
-      const recId = "rec_" + Date.now();
-      let photoId = null;
+      const wasEditing = !!editingRecordId;
+      const recId = wasEditing ? editingRecordId : ("rec_" + Date.now());
+      const existingRec = wasEditing ? records.find(r => r.id === editingRecordId) : null;
+
+      let photoId = existingRec?.receiptImageId || null;
       if (attachedImageBase64) {
         photoId = "photo_" + recId;
         await savePhotoToDB(photoId, attachedImageBase64);
+      } else {
+        photoId = null;
       }
 
-      const newRecord = {
+      const updatedRecord = {
         id: recId,
         date: date,
         type: inputType,
         store: store,
-        phone: pendingScanResult?.phone || "",
+        phone: pendingScanResult?.phone || existingRec?.phone || "",
         paymentMethod: paymentMethod,
         tags: tags,
         inclusionScope: inputScope,
-        memo: "",
+        memo: memo,
         totalAmount: totalAmount,
         items: items,
         receiptImageId: photoId
       };
 
-      records.unshift(newRecord);
+      if (wasEditing) {
+        const idx = records.findIndex(r => r.id === editingRecordId);
+        if (idx !== -1) {
+          records[idx] = updatedRecord;
+        } else {
+          records.unshift(updatedRecord);
+        }
+      } else {
+        records.unshift(updatedRecord);
+      }
+
       saveAllStorage();
+      updateTagFilterDropdown();
 
-      // 保存した明細の日付に履歴の表示期間を自動同期する
       viewingDate = parseLocalDate(date);
-
-      document.getElementById("simple-amount").value = "";
-      document.getElementById("form-store").value = "";
-      document.getElementById("form-tags").value = "";
-      document.getElementById("form-date").value = getTodayISO();
-      removeAttachedImage();
-      pendingScanResult = null;
-      document.getElementById("split-items-list").innerHTML = "";
-      setSplitMode(false);
-      setInclusionScope("always");
+      cancelEditMode();
 
       renderDashboard();
       renderHistoryList();
-      showToast(`¥${totalAmount.toLocaleString()} を保存しました！（履歴に反映済）`);
+
+      if (wasEditing) {
+        showToast(`明細「${store} (¥${totalAmount.toLocaleString()})」を上書き更新しました！`);
+        switchTab("history");
+      } else {
+        showToast(`¥${totalAmount.toLocaleString()} を保存しました！（履歴に反映済）`);
+      }
     }
 
-    // ★ モーダルから1タップで即座に保存して履歴タブへ移動する関数
     async function saveScannedReceiptDirectly() {
       if (!pendingScanResult) return;
       applyScannedReceiptToForm();
@@ -1501,7 +1697,7 @@
     }
 
     // ==========================================
-    // レシート解析（日付正規化＋支払合計優先＋差額自動調整）
+    // レシート解析
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1616,7 +1812,6 @@
           });
         }
 
-        // 日付の年ズレ・書式を完全正規化
         const normalizedDate = normalizeReceiptDate(parsed.d || parsed.date, true);
 
         const standardized = {
@@ -1785,6 +1980,26 @@
       document.getElementById("attached-image-preview-box").classList.add("hidden");
     }
 
+    // ★ タグ絞り込みドロップダウンの動的更新
+    function updateTagFilterDropdown() {
+      const sel = document.getElementById("hist-filter-tag");
+      if (!sel) return;
+      const curVal = sel.value;
+      const tagSet = new Set();
+      records.forEach(r => {
+        (r.tags || []).forEach(t => {
+          if (t) tagSet.add(t);
+        });
+      });
+      const sortedTags = Array.from(tagSet).sort();
+      sel.innerHTML = `<option value="all">すべてのタグ</option>` + sortedTags.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+      if (sortedTags.includes(curVal)) {
+        sel.value = curVal;
+      } else {
+        sel.value = "all";
+      }
+    }
+
     function toggleHistoryAllMode() {
       isHistoryAllMode = !isHistoryAllMode;
       const btn = document.getElementById("hist-all-toggle-btn");
@@ -1913,6 +2128,7 @@
 
           const hasPhotoIcon = rec.receiptImageId ? `<i class="fa-solid fa-camera text-teal-600 ml-1 text-[10px]"></i>` : "";
           const dispAmt = safeParseInt(rec.totalAmount);
+          const tagBadges = (rec.tags || []).map(t => `<span class="text-[9px] bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded-full font-bold border border-teal-200/60">${escapeHtml(t)}</span>`).join(" ");
 
           row.innerHTML = `
             <div class="flex items-center space-x-2.5 overflow-hidden">
@@ -1925,13 +2141,17 @@
                   ${scopeBadge}
                   ${hasPhotoIcon}
                 </div>
-                <div class="text-[10px] text-slate-400 truncate">
-                  ${getPaymentName(rec.paymentMethod)} ${rec.items?.length > 1 ? `· ${rec.items.length}品目` : ''} ${(rec.tags || []).join(' ')}
+                <div class="text-[10px] text-slate-400 truncate flex items-center gap-1 mt-0.5">
+                  <span>${getPaymentName(rec.paymentMethod)} ${rec.items?.length > 1 ? `· ${rec.items.length}品目` : ''}</span>
+                  ${tagBadges}
                 </div>
               </div>
             </div>
-            <div class="text-xs font-black ${rec.type === 'expense' ? 'text-slate-800' : 'text-emerald-600'} shrink-0 ml-2">
-              ${rec.type === 'expense' ? '' : '+'}¥${dispAmt.toLocaleString()}
+            <div class="text-right shrink-0 ml-2">
+              <div class="text-xs font-black ${rec.type === 'expense' ? 'text-slate-800' : 'text-emerald-600'}">
+                ${rec.type === 'expense' ? '' : '+'}¥${dispAmt.toLocaleString()}
+              </div>
+              <div class="text-[9px] text-teal-600 font-bold">修正・タグ <i class="fa-solid fa-chevron-right text-[8px]"></i></div>
             </div>
           `;
           list.appendChild(row);
@@ -1941,6 +2161,7 @@
       });
     }
 
+    // ★ 詳細モーダル（その場でクイックタグ＆メモ編集 ＋ フル編集呼び出し）
     async function openDetailModal(rec) {
       const body = document.getElementById("detail-modal-body");
       body.innerHTML = `<div class="text-center py-4 text-slate-400">読み込み中...</div>`;
@@ -1960,8 +2181,9 @@
       }
 
       let itemsHtml = "";
+      const catPool = rec.type === "income" ? categories.income : categories.expense;
       (rec.items || []).forEach(it => {
-        const cat = categories.expense.find(c => c.id === it.categoryId) || { name: "その他" };
+        const cat = catPool.find(c => c.id === it.categoryId) || { name: "その他" };
         itemsHtml += `
           <div class="flex justify-between items-center py-1 border-b border-slate-100">
             <div>
@@ -1975,6 +2197,7 @@
 
       const scopeMap = { always: "常に含む", yearly_only: "年別のみ (特別費)", excluded: "集計除外" };
       const dispAmt = safeParseInt(rec.totalAmount);
+      const currentTagsStr = (rec.tags || []).join(" ");
 
       body.innerHTML = `
         <div class="bg-slate-50 p-3 rounded-xl space-y-1.5 text-xs">
@@ -1983,10 +2206,34 @@
           <div class="flex justify-between"><span class="text-slate-400">日付:</span><span class="font-medium text-slate-700">${rec.date}</span></div>
           <div class="flex justify-between"><span class="text-slate-400">支払元:</span><span class="font-medium text-slate-700">${getPaymentName(rec.paymentMethod)}</span></div>
           <div class="flex justify-between"><span class="text-slate-400">集計対象:</span><span class="font-bold text-teal-800">${scopeMap[rec.inclusionScope || 'always']}</span></div>
-          ${rec.memo ? `<div class="flex justify-between"><span class="text-slate-400">メモ:</span><span class="font-medium text-slate-700">${escapeHtml(rec.memo)}</span></div>` : ''}
-          ${rec.tags && rec.tags.length > 0 ? `<div class="flex justify-between"><span class="text-slate-400">タグ:</span><span class="font-medium text-teal-700">${rec.tags.join(' ')}</span></div>` : ''}
           <div class="flex justify-between pt-1 border-t border-slate-200"><span class="text-slate-400">合計金額:</span><span class="font-black text-rose-500 text-base">¥${dispAmt.toLocaleString()}</span></div>
         </div>
+
+        <!-- ★ クイックタグ付け & メモ編集ボックス -->
+        <div class="bg-teal-50/70 p-3 rounded-xl border border-teal-200 space-y-2">
+          <div class="text-[11px] font-bold text-teal-800 flex items-center space-x-1">
+            <i class="fa-solid fa-tags"></i>
+            <span>クイックタグ付け・メモ編集</span>
+          </div>
+          <div>
+            <input type="text" id="modal-quick-tags" autocomplete="off" value="${escapeHtml(currentTagsStr)}" placeholder="#旅行 #まとめ買い" class="w-full px-2.5 py-1.5 text-xs bg-white border border-teal-200 rounded-lg focus:outline-none focus:border-teal-500 mb-1.5">
+            <div class="flex flex-wrap gap-1">
+              <button type="button" onclick="addTagToModalInput('#旅行')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#旅行</button>
+              <button type="button" onclick="addTagToModalInput('#外食')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#外食</button>
+              <button type="button" onclick="addTagToModalInput('#イベント')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#イベント</button>
+              <button type="button" onclick="addTagToModalInput('#日用品')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#日用品</button>
+              <button type="button" onclick="addTagToModalInput('#医療費')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#医療費</button>
+              <button type="button" onclick="addTagToModalInput('#特別費')" class="text-[10px] bg-white text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full hover:bg-teal-100">#特別費</button>
+            </div>
+          </div>
+          <div>
+            <input type="text" id="modal-quick-memo" autocomplete="off" value="${escapeHtml(rec.memo || '')}" placeholder="一言メモを入力..." class="w-full px-2.5 py-1.5 text-xs bg-white border border-teal-200 rounded-lg focus:outline-none focus:border-teal-500">
+          </div>
+          <button type="button" onclick="saveQuickTagsAndMemo('${rec.id}')" class="w-full py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-lg shadow-xs transition">
+            タグ・メモだけ即保存する
+          </button>
+        </div>
+
         <div>
           <div class="font-bold text-slate-400 mb-1">内訳・品目</div>
           <div class="bg-slate-50 p-2.5 rounded-xl space-y-1">${itemsHtml}</div>
@@ -1994,10 +2241,16 @@
         ${photoHtml}
       `;
 
+      document.getElementById("detail-modal-edit-btn").onclick = () => {
+        startEditRecord(rec.id);
+      };
+
       document.getElementById("detail-modal-delete-btn").onclick = () => {
         confirmAction("明細の削除", `「${rec.store} (¥${dispAmt.toLocaleString()})」を削除しますか？`, () => {
           records = records.filter(r => r.id !== rec.id);
+          if (editingRecordId === rec.id) cancelEditMode();
           saveAllStorage();
+          updateTagFilterDropdown();
           closeModal("detail-modal");
           renderHistoryList();
           renderDashboard();
@@ -2387,6 +2640,7 @@
 
         records = newRecords.concat(records);
         saveAllStorage();
+        updateTagFilterDropdown();
         renderDashboard();
         renderPaymentMethodDropdowns();
         renderPaymentMethodBadges();
@@ -2608,7 +2862,7 @@
     }
 
     function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "2.7", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      const full = { app: "KakeiboPWA", version: "2.8", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
       downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
       showToast("完全バックアップJSONを出力しました");
     }
@@ -2626,6 +2880,7 @@
           if (imp.config) appConfig = imp.config;
           saveAllStorage();
           loadStorageData();
+          updateTagFilterDropdown();
           renderDashboard();
           showToast("バックアップから復元しました！");
         } catch { showToast("復元に失敗しました", true); }
@@ -2635,10 +2890,10 @@
     }
     function exportStandardCSV() {
       if (records.length === 0) { showToast("データがありません", true); return; }
-      let csv = "\uFEFFid,日付,種別,店名,電話番号,支払元,集計対象,タグ,品目名,品目カテゴリ,金額\n";
+      let csv = "\uFEFFid,日付,種別,店名,電話番号,支払元,集計対象,タグ,メモ,品目名,品目カテゴリ,金額\n";
       records.forEach(r => {
         (r.items || []).forEach(it => {
-          csv += `"${r.id}","${r.date}","${r.type}","${(r.store||'').replace(/"/g, '""')}","${r.phone||''}","${r.paymentMethod}","${r.inclusionScope}","${(r.tags||[]).join(' ')}","${(it.name||'').replace(/"/g, '""')}","${it.categoryId}",${safeParseInt(it.price)}\n`;
+          csv += `"${r.id}","${r.date}","${r.type}","${(r.store||'').replace(/"/g, '""')}","${r.phone||''}","${r.paymentMethod}","${r.inclusionScope}","${(r.tags||[]).join(' ')}","${(r.memo||'').replace(/"/g, '""')}","${(it.name||'').replace(/"/g, '""')}","${it.categoryId}",${safeParseInt(it.price)}\n`;
         });
       });
       downloadFile(csv, `家計簿明細_${getTodayISO()}.csv`, "text/csv;charset=utf-8;");
@@ -2652,7 +2907,7 @@
       const d = String(now.getDate()).padStart(2, '0');
       const demos = [
         {
-          id: "demo_1", date: `${yr}-${m}-${d}`, type: "expense", store: "マツモトキヨシ 渋谷店", phone: "03-3461-1234", paymentMethod: "main_card", tags: ["#日用品まとめ買い"], inclusionScope: "always", memo: "ドラッグストアで食品と薬をまとめて購入", totalAmount: 3260,
+          id: "demo_1", date: `${yr}-${m}-${d}`, type: "expense", store: "マツモトキヨシ 渋谷店", phone: "03-3461-1234", paymentMethod: "main_card", tags: ["#日用品"], inclusionScope: "always", memo: "ドラッグストアで食品と薬をまとめて購入", totalAmount: 3260,
           items: [
             { id: "it_1", name: "総合かぜ薬 パブロン", price: 1480, categoryId: "medical" },
             { id: "it_2", name: "お茶 2L × 2本", price: 360, categoryId: "food" },
@@ -2661,12 +2916,13 @@
           ]
         },
         {
-          id: "demo_2", date: `${yr}-${m}-${d}`, type: "expense", store: "ライフ スーパー", phone: "03-5555-6666", paymentMethod: "paypay", tags: ["#自炊"], inclusionScope: "always", memo: "夕食食材", totalAmount: 2480,
+          id: "demo_2", date: `${yr}-${m}-${d}`, type: "expense", store: "ライフ スーパー", phone: "03-5555-6666", paymentMethod: "paypay", tags: ["#外食"], inclusionScope: "always", memo: "夕食食材", totalAmount: 2480,
           items: [{ id: "it_1", name: "生鮮食品・肉・野菜", price: 2480, categoryId: "food" }]
         }
       ];
       records = demos.concat(records);
       saveAllStorage();
+      updateTagFilterDropdown();
       renderDashboard();
       showToast("サンプルデータを追加しました！");
     }
@@ -2677,8 +2933,10 @@
         categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         paymentMethods = JSON.parse(JSON.stringify(DEFAULT_PAYMENT_METHODS));
         fixedExpenses = [];
+        cancelEditMode();
         saveAllStorage();
         loadStorageData();
+        updateTagFilterDropdown();
         renderDashboard();
         showToast("すべて初期化しました");
       });
