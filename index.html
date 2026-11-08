@@ -2,192 +2,447 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿</title>
-
-  <!-- 検索エンジン除外（インデックス・キャッシュ防止） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-  <meta name="googlebot" content="noindex, nofollow, noarchive">
-
-  <!-- PWA設定 -->
-  <meta name="theme-color" content="#0f766e">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="apple-touch-icon" href="https://placehold.co/192x192/0f766e/ffffff?text=家計簿">
-
-  <!-- Tailwind CSS CDN -->
+  <title>スマート家計簿</title>
+  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoi5a626KiI56ysIiwic2hvcnRfbmFtZSI6IuW 家計簿IiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJzdGFydF91cmwiOiIuLyIsInRoZW1lX2NvbG9yIjoiIzBkOTQ4OCIsImJhY2tncm91bmRfY29sb3IiOiIjZjhmYWY5In0=">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome 6 Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
-    body {
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-    .hide-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    .fade-in {
-      animation: fadeIn 0.18s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    .pb-safe { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 flex justify-center min-h-screen">
+<body class="bg-slate-50 text-slate-800 min-h-screen">
 
-  <!-- アプリメイン枠（スマホ縦持ち最適化） -->
-  <div class="w-full max-w-md h-[100dvh] flex flex-col bg-white shadow-2xl relative overflow-hidden">
+  <!-- Header -->
+  <header class="bg-teal-700 text-white p-4 sticky top-0 z-20 shadow-md flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <i class="fa-solid fa-wallet text-xl text-teal-200"></i>
+      <h1 class="text-lg font-bold">スマート家計簿</h1>
+    </div>
+    <div id="statusBadge" class="text-xs bg-teal-800 px-2.5 py-1 rounded-full text-teal-100 flex items-center gap-1">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span> ローカル保護
+    </div>
+  </header>
 
-    <!-- 1. トップヘッダー -->
-    <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
-      <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿</h1>
+  <!-- Main Container -->
+  <main class="max-w-md mx-auto p-4 pb-safe space-y-4">
+
+    <!-- Tab 1: 入力画面 -->
+    <section id="tab-input" class="space-y-4">
+      <!-- レシート撮影カード -->
+      <div class="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI レシート自動入力
+          </span>
+          <span id="apiKeyWarning" class="text-xs text-rose-600 hidden font-bold">※API未設定</span>
+        </div>
+        <p class="text-xs text-slate-600 mb-3">レシートを撮影すると品目・金額・カテゴリを自動分解します。</p>
+        <label class="w-full bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm transition">
+          <i class="fa-solid fa-camera text-lg"></i>
+          <span id="scanBtnText">レシートを撮影 / 選択</span>
+          <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden">
+        </label>
       </div>
-      <div class="flex items-center space-x-2 text-xs">
-        <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
-      </div>
-    </header>
 
-    <!-- 2. コンテンツエリア（タブ切替） -->
-    <main class="flex-1 overflow-y-auto hide-scrollbar pb-20 bg-slate-50 relative">
+      <!-- 手動入力フォーム -->
+      <form id="expenseForm" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex gap-2">
+          <div class="w-1/2">
+            <label class="block text-xs font-bold text-slate-600 mb-1">日付</label>
+            <input type="date" id="dateInput" required class="w-full text-sm p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+          </div>
+          <div class="w-1/2">
+            <label class="block text-xs font-bold text-slate-600 mb-1">店舗名</label>
+            <input type="text" id="shopInput" placeholder="例: スーパー" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+          </div>
+        </div>
 
-      <!-- ================= 1. ダッシュボード・入力 タブ ================= -->
-      <section id="tab-input" class="p-4 space-y-4 fade-in">
-        <!-- 予算プログレスカード -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
-              <span class="text-xs font-bold text-slate-500" id="dash-cycle-label">今月の予算状況</span>
+        <div class="flex gap-2">
+          <div class="w-1/2">
+            <label class="block text-xs font-bold text-slate-600 mb-1">支払元</label>
+            <select id="paymentMethod" class="w-full text-sm p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+              <option value="現金">現金</option>
+              <option value="クレジットカード">クレジットカード</option>
+              <option value="電子マネー">電子マネー / QR</option>
+            </select>
+          </div>
+          <div class="w-1/2">
+            <label class="block text-xs font-bold text-slate-600 mb-1">合計金額</label>
+            <div class="relative">
+              <span class="absolute left-2.5 top-2.5 text-xs text-slate-400">¥</span>
+              <input type="number" id="totalAmountInput" required placeholder="0" class="w-full text-sm font-bold pl-7 p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
             </div>
-            <span id="dash-days-left-badge" class="text-[10px] bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-full border border-teal-200">残り--日</span>
           </div>
+        </div>
 
-          <!-- 祝日調整注記 -->
-          <div id="dash-cycle-adjustment-note" class="hidden text-[10px] bg-amber-50 text-amber-800 px-2.5 py-1.5 rounded-xl border border-amber-200/70 flex items-center space-x-1.5">
-            <i class="fa-solid fa-calendar-check text-amber-600"></i>
-            <span id="dash-cycle-adjustment-text" class="font-bold"></span>
+        <!-- 内訳アイテム -->
+        <div class="pt-2 border-t border-slate-100">
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-xs font-bold text-slate-700">内訳・品目 (スプリット記帳)</label>
+            <button type="button" id="addItemBtn" class="text-xs text-teal-600 hover:text-teal-700 font-bold flex items-center gap-1">
+              <i class="fa-solid fa-plus-circle"></i> 品目を追加
+            </button>
           </div>
+          <div id="itemsContainer" class="space-y-2"></div>
+        </div>
 
+        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl shadow-sm transition">
+          家計簿に登録する
+        </button>
+      </form>
+    </section>
+
+    <!-- Tab 2: 履歴画面 -->
+    <section id="tab-history" class="space-y-3 hidden">
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-slate-800 text-sm">支出履歴一覧</h2>
+        <span id="historyCount" class="text-xs text-slate-500">0件</span>
+      </div>
+      <div id="historyList" class="space-y-2"></div>
+    </section>
+
+    <!-- Tab 3: 分析画面 -->
+    <section id="tab-analytics" class="space-y-4 hidden">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
+        <div class="text-xs text-slate-500">今月の総支出</div>
+        <div id="monthlyTotalDisplay" class="text-2xl font-black text-slate-800 mt-1">¥0</div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-xs text-slate-700 mb-3">カテゴリ別支出内訳</h3>
+        <div id="categorySummary" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- Tab 4: 設定画面 -->
+    <section id="tab-settings" class="space-y-4 hidden">
+      <!-- Zaim CSV インポート専用カード -->
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-4 rounded-2xl shadow-sm space-y-2">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-file-csv text-xl"></i>
+          <h2 class="font-bold text-sm">Zaim CSV インポート</h2>
+        </div>
+        <p class="text-xs text-emerald-100">Zaimから書き出したCSVをそのまま取り込み、文字化けせず自動で統合します。</p>
+        <label class="block w-full bg-white text-emerald-800 font-bold text-xs text-center py-2.5 px-3 rounded-xl cursor-pointer shadow">
+          ZaimのCSVファイルを選択してインポート
+          <input type="file" id="zaimCsvInput" accept=".csv" class="hidden">
+        </label>
+      </div>
+
+      <!-- API Key 設定カード -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-teal-600"></i> Gemini API 設定
+        </h2>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Google AI Studioで取得したキー（AQ.またはAIzaで始まる文字列）を入力します。キーは端末内（LocalStorage）にのみ保持されます。
+        </p>
+        <div class="flex gap-2">
+          <input type="password" id="apiKeyInput" placeholder="AQ... または AIza..." class="flex-1 text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+          <button type="button" id="saveApiKeyBtn" class="bg-teal-600 text-white font-bold text-xs px-4 rounded-lg">保存</button>
+        </div>
+      </div>
+
+      <!-- バックアップ & リセット -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <h2 class="font-bold text-xs text-slate-800">ローカルデータ管理</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="exportCsvBtn" class="bg-slate-100 text-slate-700 text-xs font-bold py-2.5 rounded-lg border border-slate-200">
+            CSVエクスポート
+          </button>
+          <button type="button" id="clearDataBtn" class="bg-rose-50 text-rose-700 text-xs font-bold py-2.5 rounded-lg border border-rose-200">
+            全データ初期化
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-slate-200 z-30 py-2">
+    <div class="max-w-md mx-auto grid grid-cols-4 text-center">
+      <button class="nav-btn text-teal-600 flex flex-col items-center gap-0.5" data-tab="input">
+        <i class="fa-solid fa-pen-to-square text-base"></i>
+        <span class="text-[10px] font-bold">入力</span>
+      </button>
+      <button class="nav-btn text-slate-400 flex flex-col items-center gap-0.5" data-tab="history">
+        <i class="fa-solid fa-receipt text-base"></i>
+        <span class="text-[10px] font-bold">履歴</span>
+      </button>
+      <button class="nav-btn text-slate-400 flex flex-col items-center gap-0.5" data-tab="analytics">
+        <i class="fa-solid fa-chart-pie text-base"></i>
+        <span class="text-[10px] font-bold">分析</span>
+      </button>
+      <button class="nav-btn text-slate-400 flex flex-col items-center gap-0.5" data-tab="settings">
+        <i class="fa-solid fa-gear text-base"></i>
+        <span class="text-[10px] font-bold">設定</span>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    const CATEGORIES = ["食費", "日用品", "住居費", "光熱費", "通信費", "交通費", "交際費", "趣味・娯楽", "教育", "医療費", "その他"];
+    let expenses = JSON.parse(localStorage.getItem('kakeibo_expenses') || '[]');
+
+    document.getElementById('dateInput').valueAsDate = new Date();
+
+    // タブ切り替え
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+        document.getElementById(`tab-${target}`).classList.remove('hidden');
+        document.querySelectorAll('.nav-btn').forEach(b => {
+          b.classList.remove('text-teal-600');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('text-teal-600');
+        btn.classList.remove('text-slate-400');
+        if (target === 'history') renderHistory();
+        if (target === 'analytics') renderAnalytics();
+      });
+    });
+
+    // API Key 管理
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    apiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+    document.getElementById('saveApiKeyBtn').addEventListener('click', () => {
+      const val = apiKeyInput.value.trim();
+      localStorage.setItem('gemini_api_key', val);
+      alert('APIキーを保存しました。');
+      checkApiKey();
+    });
+
+    function checkApiKey() {
+      const key = localStorage.getItem('gemini_api_key');
+      document.getElementById('apiKeyWarning').classList.toggle('hidden', !!key);
+    }
+    checkApiKey();
+
+    // 内訳アイテム追加
+    const itemsContainer = document.getElementById('itemsContainer');
+    function addItemRow(name = '', category = '食費', amount = '') {
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 items-center';
+      row.innerHTML = `
+        <input type="text" placeholder="品目名" value="${name}" class="item-name flex-1 text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg">
+        <select class="item-cat text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg">
+          ${CATEGORIES.map(c => `<option value="${c}" ${c === category ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>
+        <input type="number" placeholder="金額" value="${amount}" class="item-amt w-20 text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg text-right">
+        <button type="button" class="text-rose-400 hover:text-rose-600 p-1" onclick="this.parentElement.remove(); recalcTotal();">
+          <i class="fa-solid fa-circle-minus"></i>
+        </button>
+      `;
+      row.querySelector('.item-amt').addEventListener('input', recalcTotal);
+      itemsContainer.appendChild(row);
+    }
+    document.getElementById('addItemBtn').addEventListener('click', () => addItemRow());
+
+    function recalcTotal() {
+      let sum = 0;
+      document.querySelectorAll('.item-amt').forEach(inp => {
+        const v = parseInt(inp.value, 10);
+        if (!isNaN(v)) sum += v;
+      });
+      if (sum > 0) document.getElementById('totalAmountInput').value = sum;
+    }
+
+    // レシート画像読み取り（Gemini 2.5 Flash / AQキー完全対応）
+    document.getElementById('receiptInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const rawKey = localStorage.getItem('gemini_api_key') || '';
+      const apiKey = rawKey.trim();
+      if (!apiKey) {
+        alert('先に「設定」タブでGemini APIキーを入力・保存してください。');
+        return;
+      }
+
+      const scanBtnText = document.getElementById('scanBtnText');
+      scanBtnText.textContent = 'レシート解析中...';
+
+      try {
+        const base64Data = await fileToBase64(file);
+        
+        // 最新の安定版モデル gemini-2.5-flash を使用し、ヘッダーとパラメータの両方で認証
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        
+        const promptText = `このレシート画像から「店舗名」「日付(YYYY-MM-DD)」「品目一覧(品名, 金額, カテゴリ)」「合計金額」を抽出してください。
+カテゴリは必ず以下から1つ選んでください: [食費, 日用品, 住居費, 光熱費, 通信費, 交通費, 交際費, 趣味・娯楽, 教育, 医療費, その他]
+出力は以下のJSON形式のみで回答し、マークダウン等は含めないでください:
+{"shop":"","date":"YYYY-MM-DD","total":0,"items":[{"name":"","amount":0,"category":"食費"}]}`;
+
+        const payload = {
+          contents: [{
+            parts: [
+              { text: promptText },
+              { inline_data: { mime_type: file.type || "image/jpeg", data: base64Data } }
+            ]
+          }],
+          generationConfig: { response_mime_type: "application/json" }
+        };
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`APIエラー [HTTP ${response.status}]: ${errText}`);
+        }
+
+        const resData = await response.json();
+        const rawJsonText = resData.candidates[0].content.parts[0].text;
+        const parsed = JSON.parse(rawJsonText);
+
+        if (parsed.shop) document.getElementById('shopInput').value = parsed.shop;
+        if (parsed.date) document.getElementById('dateInput').value = parsed.date;
+        if (parsed.total) document.getElementById('totalAmountInput').value = parsed.total;
+
+        itemsContainer.innerHTML = '';
+        if (Array.isArray(parsed.items) && parsed.items.length > 0) {
+          parsed.items.forEach(it => addItemRow(it.name || '', it.category || '食費', it.amount || ''));
+        }
+
+        alert('レシートの読み取りが完了しました。内容を確認してください。');
+      } catch (err) {
+        console.error(err);
+        alert(`解析失敗:\n${err.message}`);
+      } finally {
+        scanBtnText.textContent = 'レシートを撮影 / 選択';
+        e.target.value = '';
+      }
+    });
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // フォーム送信（登録）
+    document.getElementById('expenseForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const date = document.getElementById('dateInput').value;
+      const shop = document.getElementById('shopInput').value || '未設定';
+      const payment = document.getElementById('paymentMethod').value;
+      const total = parseInt(document.getElementById('totalAmountInput').value, 10) || 0;
+
+      const items = [];
+      document.querySelectorAll('#itemsContainer > div').forEach(row => {
+        const name = row.querySelector('.item-name').value;
+        const cat = row.querySelector('.item-cat').value;
+        const amt = parseInt(row.querySelector('.item-amt').value, 10) || 0;
+        if (name || amt > 0) items.push({ name: name || '品目', category: cat, amount: amt });
+      });
+
+      if (items.length === 0) {
+        items.push({ name: '一括', category: '食費', amount: total });
+      }
+
+      const record = { id: Date.now().toString(), date, shop, payment, total, items };
+      expenses.unshift(record);
+      localStorage.setItem('kakeibo_expenses', JSON.stringify(expenses));
+
+      alert('家計簿に登録しました！');
+      document.getElementById('expenseForm').reset();
+      document.getElementById('dateInput').valueAsDate = new Date();
+      itemsContainer.innerHTML = '';
+    });
+
+    // 履歴描画
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      document.getElementById('historyCount').textContent = `${expenses.length}件`;
+      if (expenses.length === 0) {
+        list.innerHTML = '<div class="text-xs text-slate-400 text-center py-8">登録された支出はありません</div>';
+        return;
+      }
+      list.innerHTML = expenses.map(rec => `
+        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
           <div>
-            <div class="flex justify-between items-baseline mb-1">
-              <div class="text-xs text-slate-400">支出額 / 予算</div>
-              <div class="text-right">
-                <span id="dash-spent-amount" class="text-xl font-black text-slate-800">¥0</span>
-                <span id="dash-budget-amount" class="text-xs text-slate-400 font-medium"> / ¥100,000</span>
+            <div class="text-xs font-bold text-slate-800">${rec.shop}</div>
+            <div class="text-[10px] text-slate-400">${rec.date} · ${rec.payment} · ${rec.items.length}品目</div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-bold text-slate-800">¥${rec.total.toLocaleString()}</div>
+            <button onclick="deleteExpense('${rec.id}')" class="text-[10px] text-rose-500 hover:underline">削除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.deleteExpense = (id) => {
+      if (!confirm('この支出履歴を削除しますか？')) return;
+      expenses = expenses.filter(e => e.id !== id);
+      localStorage.setItem('kakeibo_expenses', JSON.stringify(expenses));
+      renderHistory();
+    };
+
+    // 分析描画
+    function renderAnalytics() {
+      const curMonth = new Date().toISOString().slice(0, 7);
+      let monthlyTotal = 0;
+      const catTotals = {};
+
+      expenses.forEach(rec => {
+        if (rec.date && rec.date.startsWith(curMonth)) {
+          monthlyTotal += rec.total;
+          rec.items.forEach(it => {
+            catTotals[it.category] = (catTotals[it.category] || 0) + it.amount;
+          });
+        }
+      });
+
+      document.getElementById('monthlyTotalDisplay').textContent = `¥${monthlyTotal.toLocaleString()}`;
+      const summaryContainer = document.getElementById('categorySummary');
+
+      if (monthlyTotal === 0) {
+        summaryContainer.innerHTML = '<div class="text-xs text-slate-400 text-center py-4">今月のデータはありません</div>';
+        return;
+      }
+
+      summaryContainer.innerHTML = Object.entries(catTotals)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cat, amt]) => {
+          const pct = Math.round((amt / monthlyTotal) * 100);
+          return `
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-bold text-slate-700">${cat}</span>
+                <span class="text-slate-500">¥${amt.toLocaleString()} (${pct}%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-teal-600 h-1.5 rounded-full" style="width: ${pct}%"></div>
               </div>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-              <div id="dash-budget-bar" class="bg-teal-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-          </div>
+          `;
+        }).join('');
+    }
 
-          <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-50 text-center">
-            <div class="p-2 rounded-xl bg-slate-50">
-              <div class="text-[10px] text-slate-400 font-bold">残りの予算</div>
-              <div id="dash-remain-budget" class="text-sm font-black text-teal-700">¥0</div>
-            </div>
-            <div class="p-2 rounded-xl bg-slate-50">
-              <div class="text-[10px] text-slate-400 font-bold">1日あたりの目安</div>
-              <div id="dash-daily-allowance" class="text-sm font-black text-slate-700">¥0/日</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 収支切替トグル -->
-        <div class="grid grid-cols-2 gap-2 p-1 bg-slate-200 rounded-xl">
-          <button id="type-expense-btn" onclick="setInputType('expense')" class="py-2 text-center font-bold text-xs rounded-lg bg-teal-700 text-white shadow-xs transition">
-            支出
-          </button>
-          <button id="type-income-btn" onclick="setInputType('income')" class="py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition">
-            収入
-          </button>
-        </div>
-
-        <!-- レシート撮影バナー（支出時のみ） -->
-        <div id="receipt-scan-banner" class="bg-gradient-to-r from-teal-700 to-emerald-600 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between">
-          <div class="flex items-center space-x-2.5">
-            <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0">
-              <i class="fa-solid fa-camera"></i>
-            </div>
-            <div>
-              <div class="text-xs font-bold">レシート読取 (Gemini AI)</div>
-              <div class="text-[10px] text-teal-100">品目・個別カテゴリ・金額を一括自動入力</div>
-            </div>
-          </div>
-          <input type="file" id="receipt-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
-          <button onclick="document.getElementById('receipt-input').click()" class="bg-white text-teal-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow active:scale-95 transition shrink-0">
-            撮影する
-          </button>
-        </div>
-
-        <!-- 入力フォーム本体 -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-          <!-- 日付 & 支払元 -->
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-[10px] font-bold text-slate-400 block mb-1">日付</label>
-              <input type="date" id="form-date" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 font-bold">
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-slate-400 block mb-1">支払い元 / 口座</label>
-              <select id="form-payment-method" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 font-bold">
-                <!-- JS生成 -->
-              </select>
-            </div>
-          </div>
-
-          <!-- 店舗・電話番号検索 -->
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[10px] font-bold text-slate-400">店名 / 電話番号検索</label>
-              <span class="text-[10px] text-teal-600">電話番号で店名自動特定</span>
-            </div>
-            <div class="flex space-x-2">
-              <div class="relative flex-1">
-                <input type="text" id="form-store" placeholder="例: 03-1234-5678 または マツモトキヨシ" class="w-full pl-3 pr-7 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
-                <button type="button" onclick="document.getElementById('form-store').value=''" class="absolute right-2 top-2 text-slate-300 hover:text-slate-500 text-xs">
-                  <i class="fa-solid fa-circle-xmark"></i>
-                </button>
-              </div>
-              <button type="button" onclick="searchStore()" class="px-3 py-2 bg-slate-100 hover:bg-teal-50 text-teal-700 font-bold text-xs rounded-xl border border-slate-200 transition shrink-0 flex items-center space-x-1">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <span>検索</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 集計対象（常に含む / 年別のみ / 集計除外） -->
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[10px] font-bold text-slate-400">集計対象</label>
-              <button type="button" onclick="openModal('inclusion-help-modal')" class="text-[10px] text-teal-600 underline">違いについて</button>
-            </div>
-            <div class="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold">
-              <button type="button" id="form-scope-always" onclick="setInclusionScope('always')" class="py-1.5 rounded-lg bg-teal-700 text-white transition">常に含む</button>
-              <button type="button" id="form-scope-yearly_only" onclick="setInclusionScope('yearly_only')" class="py-1.5 rounded-lg text-slate-600 transition">年別のみ</button>
-              <button type="button" id="form-scope-excluded" onclick="setInclusionScope('excluded')" class="py-1.5 rounded-lg text-slate-600 transition">集計除外</button>
-            </div>
-          </div>
-
-          <!-- タグ入力 -->
-          <div>
-            <label class="text-[10px] font-bold text-slate-400 block mb-1">タグ (任意)</label>
-            <input type="text" id="form-tags" placeholder="#旅行 #まとめ買い" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 mb-1.5">
-            <div class="flex flex-wrap gap-1">
-              <button type="button" onclick="addTagToInput('#旅行')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#旅行</button>
+    // CSVエクスポート
+    document.getElementById('exportCsvBtn').addEventListener('click', () => {
+      if (expenses.length === 0) return alert('出力するデータがありません。');
+      let csv = 'ID,日付,店舗名,支払元,品目,カテゴリ,金額\n';
+      expenses.forEach(r => {
+        r.items.forEach(it => {
+          csv += `"${r.id}","${r.date}","${r.shop}","${r.payment}","${it.name}","${it.category}",${it.amount}\n`;
+        });
+      });
+      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' }ed-full hover:bg-teal-50">#旅行</button>
               <button type="button" onclick="addTagToInput('#外食')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#外食</button>
               <button type="button" onclick="addTagToInput('#イベント')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#イベント</button>
               <button type="button" onclick="addTagToInput('#日用品')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#日用品</button>
