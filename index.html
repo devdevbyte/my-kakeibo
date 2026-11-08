@@ -46,7 +46,6 @@
 </head>
 <body class="bg-slate-100 text-slate-800 flex justify-center min-h-screen">
 
-  <!-- アプリメイン枠 -->
   <div class="w-full max-w-md h-[100dvh] flex flex-col bg-white shadow-2xl relative overflow-hidden">
 
     <!-- 1. トップヘッダー -->
@@ -63,7 +62,7 @@
     <!-- 2. コンテンツエリア（タブ切替） -->
     <main class="flex-1 overflow-y-auto hide-scrollbar pb-20 bg-slate-50 relative">
 
-      <!-- ================= 1. ダッシュボード・入力 タブ ================= -->
+      <!-- 1. ダッシュボード・入力 タブ -->
       <section id="tab-input" class="p-4 space-y-4 fade-in">
         <!-- 予算プログレスカード -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
@@ -75,7 +74,6 @@
             <span id="dash-days-left-badge" class="text-[10px] bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-full border border-teal-200">残り--日</span>
           </div>
 
-          <!-- 祝日調整注記 -->
           <div id="dash-cycle-adjustment-note" class="hidden text-[10px] bg-amber-50 text-amber-800 px-2.5 py-1.5 rounded-xl border border-amber-200/70 flex items-center space-x-1.5">
             <i class="fa-solid fa-calendar-check text-amber-600"></i>
             <span id="dash-cycle-adjustment-text" class="font-bold"></span>
@@ -116,7 +114,7 @@
           </button>
         </div>
 
-        <!-- レシート撮影バナー（支出時のみ） -->
+        <!-- レシート撮影バナー -->
         <div id="receipt-scan-banner" class="bg-gradient-to-r from-teal-700 to-emerald-600 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between">
           <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0">
@@ -135,7 +133,6 @@
 
         <!-- 入力フォーム本体 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-          <!-- 日付 & 支払元 -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">日付</label>
@@ -143,13 +140,10 @@
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">支払い元 / 口座</label>
-              <select id="form-payment-method" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 font-bold">
-                <!-- JS生成 -->
-              </select>
+              <select id="form-payment-method" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 font-bold"></select>
             </div>
           </div>
 
-          <!-- 店舗・電話番号検索 -->
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-[10px] font-bold text-slate-400">店名 / 電話番号検索</label>
@@ -169,7 +163,6 @@
             </div>
           </div>
 
-          <!-- 集計対象 -->
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-[10px] font-bold text-slate-400">集計対象</label>
@@ -182,7 +175,6 @@
             </div>
           </div>
 
-          <!-- タグ入力 -->
           <div>
             <label class="text-[10px] font-bold text-slate-400 block mb-1">タグ (任意)</label>
             <input type="text" id="form-tags" placeholder="#旅行 #まとめ買い" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 mb-1.5">
@@ -194,7 +186,6 @@
             </div>
           </div>
 
-          <!-- 入力モード -->
           <div class="pt-2 border-t border-slate-100">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-bold text-slate-700">明細・品目設定</span>
@@ -204,7 +195,6 @@
               </div>
             </div>
 
-            <!-- 単一合計 -->
             <div id="simple-input-container" class="space-y-3">
               <div>
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">金額 (円)</label>
@@ -215,13 +205,10 @@
               </div>
               <div>
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">カテゴリ</label>
-                <div id="simple-category-grid" class="grid grid-cols-4 gap-1.5">
-                  <!-- JS生成 -->
-                </div>
+                <div id="simple-category-grid" class="grid grid-cols-4 gap-1.5"></div>
               </div>
             </div>
 
-            <!-- 品目別スプリット -->
             <div id="split-input-container" class="hidden space-y-3">
               <div class="text-[11px] text-slate-500 bg-teal-50 p-2 rounded-xl border border-teal-100">
                 ドラッグストアなど「医療費」と「食品」が混ざる場合も、品目ごとにカテゴリを設定できます。
@@ -240,18 +227,14 @@
             </div>
           </div>
 
-          <!-- 写真添付プレビュー -->
           <div id="attached-image-preview-box" class="hidden bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <img id="attached-image-thumb" class="w-10 h-10 object-cover rounded-lg border" src="" alt="レシート">
               <div class="text-xs font-bold text-slate-700">レシート写真を添付済</div>
             </div>
-            <button type="button" onclick="removeAttachedImage()" class="text-rose-500 hover:text-rose-700 text-xs font-bold">
-              削除
-            </button>
+            <button type="button" onclick="removeAttachedImage()" class="text-rose-500 hover:text-rose-700 text-xs font-bold">削除</button>
           </div>
 
-          <!-- 保存ボタン -->
           <button type="button" onclick="saveRecord()" class="w-full py-3.5 bg-teal-700 hover:bg-teal-800 active:scale-[0.98] text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center space-x-2">
             <i class="fa-solid fa-check"></i>
             <span>保存する</span>
@@ -259,7 +242,7 @@
         </div>
       </section>
 
-      <!-- ================= 2. 履歴 タブ ================= -->
+      <!-- 2. 履歴 タブ -->
       <section id="tab-history" class="p-4 space-y-4 hidden fade-in">
         <div class="flex items-center justify-between bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-100">
           <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200">
@@ -307,7 +290,7 @@
         <div id="history-container" class="space-y-3"></div>
       </section>
 
-      <!-- ================= 3. 分析 タブ ================= -->
+      <!-- 3. 分析 タブ -->
       <section id="tab-analytics" class="p-4 space-y-4 hidden fade-in">
         <div class="grid grid-cols-3 gap-1 p-1 bg-slate-200 rounded-xl text-xs font-bold">
           <button id="anl-btn-month" onclick="setAnalyticsSubTab('month')" class="py-1.5 rounded-lg bg-teal-700 text-white shadow-xs">月別</button>
@@ -377,14 +360,11 @@
         </div>
       </section>
 
-      <!-- ================= 4. 設定 タブ ================= -->
+      <!-- 4. 設定 タブ -->
       <section id="tab-settings" class="p-4 space-y-4 hidden fade-in">
-        <!-- Zaim CSV インポート専用カード -->
         <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-md space-y-3 border border-emerald-500">
           <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-black">
-              Z
-            </div>
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-black">Z</div>
             <div>
               <div class="text-sm font-black tracking-tight">Zaim CSVインポート</div>
               <div class="text-[10px] text-emerald-100">Shift-JIS / UTF-8 両対応・全自動変換</div>
@@ -400,7 +380,6 @@
           </label>
         </div>
 
-        <!-- 予算・締め日設定 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-sliders text-teal-600"></i>
@@ -442,48 +421,38 @@
           </button>
         </div>
 
-        <!-- 固定費マネージャー -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="flex items-center justify-between">
             <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
               <i class="fa-solid fa-clock-rotate-left text-teal-600"></i>
               <span>固定費・定期支出の管理</span>
             </div>
-            <button onclick="openModal('fixed-expense-modal')" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
-              追加
-            </button>
+            <button onclick="openModal('fixed-expense-modal')" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">追加</button>
           </div>
           <div id="fixed-expenses-list" class="space-y-1.5"></div>
         </div>
 
-        <!-- カテゴリ管理 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="flex items-center justify-between">
             <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
               <i class="fa-solid fa-tags text-teal-600"></i>
               <span>カテゴリ自由編集</span>
             </div>
-            <button onclick="openCategoryManageModal()" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
-              編集を開く
-            </button>
+            <button onclick="openCategoryManageModal()" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">編集を開く</button>
           </div>
         </div>
 
-        <!-- 支払い元管理 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="flex items-center justify-between">
             <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
               <i class="fa-solid fa-credit-card text-teal-600"></i>
               <span>支払い元・決済手段の管理</span>
             </div>
-            <button onclick="openPaymentManageModal()" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
-              設定
-            </button>
+            <button onclick="openPaymentManageModal()" class="text-[11px] text-teal-700 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">設定</button>
           </div>
           <div id="payment-methods-badge-list" class="flex flex-wrap gap-1.5 text-xs"></div>
         </div>
 
-        <!-- Gemini APIキー -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-key text-teal-600"></i>
@@ -494,16 +463,11 @@
           </p>
           <input type="password" id="setting-api-key" placeholder="AQ... または AIzaSy..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-mono">
           <div class="flex space-x-2">
-            <button onclick="saveApiKey()" class="flex-1 py-2 bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">
-              キーを保存
-            </button>
-            <button onclick="toggleKeyVisibility()" class="px-3 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">
-              表示切替
-            </button>
+            <button onclick="saveApiKey()" class="flex-1 py-2 bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">キーを保存</button>
+            <button onclick="toggleKeyVisibility()" class="px-3 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">表示切替</button>
           </div>
         </div>
 
-        <!-- 標準データ管理 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-database text-teal-600"></i>
@@ -528,16 +492,13 @@
               <span>サンプルデータ追加</span>
             </button>
           </div>
-          <button onclick="confirmResetAll()" class="w-full py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-xl transition">
-            全データを初期化
-          </button>
+          <button onclick="confirmResetAll()" class="w-full py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-xl transition">全データを初期化</button>
         </div>
-
       </section>
 
     </main>
 
-    <!-- 3. ボトムナビゲーション (4タブ) -->
+    <!-- 3. ボトムナビゲーション -->
     <nav class="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 flex items-center justify-around z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.04)]">
       <button onclick="switchTab('input')" id="nav-input" class="flex-1 flex flex-col items-center justify-center text-teal-700 transition">
         <i class="fa-solid fa-pen-to-square text-base mb-0.5"></i>
@@ -614,7 +575,9 @@
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
         <div class="flex items-center justify-between border-b pb-2">
           <span class="font-bold text-slate-800 text-sm">カテゴリ編集</span>
-          <button onclick="closeModal('category-manage-modal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+          <button onclick="closeModal('category-manage-modal')" class="text-slate-400">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
         </div>
         <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold">
           <button id="cat-tab-exp" onclick="setCategoryManageTab('expense')" class="py-1.5 rounded-lg bg-white shadow-xs text-teal-800">支出</button>
@@ -736,7 +699,6 @@
       </div>
     </div>
 
-    <!-- AI処理中ローディングモーダル -->
     <div id="ai-loading-modal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white px-6">
       <div class="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full animate-spin mb-3"></div>
       <div id="ai-loading-title" class="text-sm font-bold mb-1">AI処理中...</div>
@@ -744,7 +706,6 @@
       <p id="ai-loading-desc" class="text-xs text-slate-300 text-center leading-relaxed"></p>
     </div>
 
-    <!-- トースト通知 -->
     <div id="toast" class="hidden absolute top-14 left-1/2 -translate-x-1/2 z-60 bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center space-x-2">
       <i id="toast-icon" class="fa-solid fa-circle-check text-teal-400"></i>
       <span id="toast-msg">保存しました</span>
@@ -1331,18 +1292,18 @@
 
       setAiLoading(true, "店舗情報を検索中...", `「${q}」を照会しています`);
       try {
-        const promptText = `電話番号または店名「${q}」から正式店舗名を1つ判定し、JSONのみで返してください。\n{"storeName": "正式店舗名"}`;
+        const promptText = `電話番号または店名「${q}」から正式店舗名を判定し、JSONのみで返してください。\n{"storeName": "正式店舗名"}`;
         const payload = {
           contents: [{ parts: [{ text: promptText }] }],
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingLevel: "low" },
+            thinkingConfig: { thinkingBudget: 0 },
             maxOutputTokens: 60
           }
         };
 
-        const { res } = await callGeminiAPIWithFallback(apiKey, payload);
+        const res = await callGeminiAPI(apiKey, payload);
         const json = await res.json();
         let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         rawText = cleanJsonText(rawText);
@@ -1437,7 +1398,7 @@
     }
 
     // ==========================================
-    // レシート解析（構文エラー除去 & 3.1 Flash-Lite 優先）
+    // レシート解析（gemini-3.8-flash 直結）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1491,12 +1452,12 @@
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingLevel: "low" }
+            thinkingConfig: { thinkingBudget: 0 }
           }
         };
 
         const t2 = performance.now();
-        const { res, usedModel } = await callGeminiAPIWithFallback(apiKey, payload);
+        const res = await callGeminiAPI(apiKey, payload);
         const t3 = performance.now();
         const netSec = ((t3 - t2) / 1000).toFixed(1);
 
@@ -1504,7 +1465,7 @@
         const usage = json.usageMetadata || {};
         const thoughtTokens = usage.thoughtsTokenCount || 0;
         const outTokens = usage.candidatesTokenCount || 0;
-        const diagText = `[診断] モデル:${usedModel} | 通信:${netSec}秒 | 出力:${outTokens} | 画像:${kbSize}KB`;
+        const diagText = `[診断] 通信:${netSec}秒 | 出力:${outTokens} | 画像:${kbSize}KB`;
 
         let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         rawText = cleanJsonText(rawText);
@@ -1561,34 +1522,24 @@
       return cleaned;
     }
 
-    async function callGeminiAPIWithFallback(apiKey, payload) {
-      const models = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
-      let lastError = null;
+    // gemini-3.8-flash への絶対URL直接送信（405防止）
+    async function callGeminiAPI(apiKey, payload) {
+      const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$){encodeURIComponent(apiKey)}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        body: JSON.stringify(payload)
+      });
 
-      for (const m of models) {
-        try {
-          const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){m}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const response = await fetch(url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": apiKey
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (response.status === 429) throw new Error("RATE_LIMIT");
-          if (response.ok) {
-            return { res: response, usedModel: m };
-          }
-          const errBody = await response.text();
-          lastError = new Error(`[${m}] HTTP ${response.status}: ${errBody}`);
-        } catch (e) {
-          if (e.message === "RATE_LIMIT") throw e;
-          lastError = e;
-        }
+      if (response.status === 429) throw new Error("RATE_LIMIT");
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`[gemini-3.8-flash] HTTP ${response.status}: ${errBody}`);
       }
-      throw lastError || new Error("API通信に失敗しました");
+      return response;
     }
 
     function compressReceiptImage(file, targetShortSide = 900) {
