@@ -123,7 +123,7 @@
               <i class="fa-solid fa-camera"></i>
             </div>
             <div>
-              <div class="text-xs font-bold">レシート読取 (Gemini AI)</div>
+              <div class="text-xs font-bold">高速 AI レシート読取</div>
               <div class="text-[10px] text-teal-100">品目・個別カテゴリ・金額を一括自動入力</div>
             </div>
           </div>
@@ -169,7 +169,7 @@
             </div>
           </div>
 
-          <!-- 集計対象（常に含む / 年別のみ / 集計除外） -->
+          <!-- 集計対象 -->
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-[10px] font-bold text-slate-400">集計対象</label>
@@ -194,7 +194,7 @@
             </div>
           </div>
 
-          <!-- 入力モード: 単一合計 vs 品目別(スプリット) -->
+          <!-- 入力モード -->
           <div class="pt-2 border-t border-slate-100">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-bold text-slate-700">明細・品目設定</span>
@@ -204,7 +204,7 @@
               </div>
             </div>
 
-            <!-- 単一合計コンテナ -->
+            <!-- 単一合計 -->
             <div id="simple-input-container" class="space-y-3">
               <div>
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">金額 (円)</label>
@@ -221,14 +221,12 @@
               </div>
             </div>
 
-            <!-- 品目別スプリットコンテナ -->
+            <!-- 品目別スプリット -->
             <div id="split-input-container" class="hidden space-y-3">
               <div class="text-[11px] text-slate-500 bg-teal-50 p-2 rounded-xl border border-teal-100">
                 ドラッグストアなど「医療費」と「食品」が混ざる場合も、品目ごとにカテゴリを設定できます。
               </div>
-              <div id="split-items-list" class="space-y-2">
-                <!-- 動的追加 -->
-              </div>
+              <div id="split-items-list" class="space-y-2"></div>
               <div class="flex justify-between items-center pt-1">
                 <button type="button" onclick="addSplitItemRow()" class="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold text-xs rounded-xl border border-teal-200 transition flex items-center space-x-1">
                   <i class="fa-solid fa-plus text-[10px]"></i>
@@ -263,7 +261,6 @@
 
       <!-- ================= 2. 履歴 タブ ================= -->
       <section id="tab-history" class="p-4 space-y-4 hidden fade-in">
-        <!-- サイクル・ナビゲーション -->
         <div class="flex items-center justify-between bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-100">
           <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200">
             <i class="fa-solid fa-chevron-left text-xs"></i>
@@ -277,7 +274,6 @@
           </button>
         </div>
 
-        <!-- 期間サマリー -->
         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 space-y-2">
           <div class="grid grid-cols-3 gap-1 text-center">
             <div>
@@ -299,7 +295,6 @@
           </div>
         </div>
 
-        <!-- フィルタ -->
         <div class="flex space-x-2">
           <select id="hist-filter-payment" onchange="renderHistoryList()" class="flex-1 px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-600 font-medium">
             <option value="all">すべての支払い元</option>
@@ -309,22 +304,17 @@
           </select>
         </div>
 
-        <!-- 明細一覧リスト -->
-        <div id="history-container" class="space-y-3">
-          <!-- JS注入 -->
-        </div>
+        <div id="history-container" class="space-y-3"></div>
       </section>
 
       <!-- ================= 3. 分析 タブ ================= -->
       <section id="tab-analytics" class="p-4 space-y-4 hidden fade-in">
-        <!-- サブモード切替 -->
         <div class="grid grid-cols-3 gap-1 p-1 bg-slate-200 rounded-xl text-xs font-bold">
           <button id="anl-btn-month" onclick="setAnalyticsSubTab('month')" class="py-1.5 rounded-lg bg-teal-700 text-white shadow-xs">月別</button>
           <button id="anl-btn-year" onclick="setAnalyticsSubTab('year')" class="py-1.5 rounded-lg text-slate-600">年別</button>
           <button id="anl-btn-medical" onclick="setAnalyticsSubTab('medical')" class="py-1.5 rounded-lg text-slate-600">医療費控除</button>
         </div>
 
-        <!-- 期間ナビゲーション -->
         <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-slate-100">
           <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
             <i class="fa-solid fa-chevron-left text-xs"></i>
@@ -335,9 +325,7 @@
           </button>
         </div>
 
-        <!-- 通常ビュー（月別・年別） -->
         <div id="anl-standard-view" class="space-y-4">
-          <!-- 年別限定の月別棒グラフ -->
           <div id="anl-yearly-chart-card" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hidden">
             <div class="text-xs font-bold text-slate-500 mb-2">年間 収支推移 (1月〜12月)</div>
             <div class="h-44">
@@ -345,7 +333,6 @@
             </div>
           </div>
 
-          <!-- ドーナツチャート -->
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
             <div class="text-xs font-bold text-slate-500 mb-2">カテゴリ別支出割合</div>
             <div class="relative h-52 flex items-center justify-center">
@@ -354,16 +341,12 @@
             </div>
           </div>
 
-          <!-- 内訳ランキング -->
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
             <div class="text-xs font-bold text-slate-500 mb-2">カテゴリ別支出内訳</div>
-            <div id="category-ranking-list" class="space-y-2.5">
-              <!-- JS注入 -->
-            </div>
+            <div id="category-ranking-list" class="space-y-2.5"></div>
           </div>
         </div>
 
-        <!-- 医療費控除ビュー -->
         <div id="anl-medical-view" class="hidden space-y-4">
           <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-2">
             <div class="flex items-center space-x-2 text-emerald-800 font-bold text-xs">
@@ -396,8 +379,7 @@
 
       <!-- ================= 4. 設定 タブ ================= -->
       <section id="tab-settings" class="p-4 space-y-4 hidden fade-in">
-
-        <!-- Zaim CSVインポート専用カード -->
+        <!-- Zaim CSV インポート専用カード -->
         <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-4 rounded-2xl shadow-md space-y-3 border border-emerald-500">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-black">
@@ -433,9 +415,7 @@
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">締め日</label>
-                <select id="setting-cutoff-day" onchange="updateSettingsCyclePreview()" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs">
-                  <!-- 1〜28日、末日 -->
-                </select>
+                <select id="setting-cutoff-day" onchange="updateSettingsCyclePreview()" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"></select>
               </div>
               <div>
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">休日・祝日時のずらし</label>
@@ -455,7 +435,6 @@
               </select>
             </div>
 
-            <!-- 締め日プレビュー -->
             <div id="setting-cycle-preview" class="p-2.5 bg-teal-50 border border-teal-200/70 rounded-xl text-teal-900 text-[11px] space-y-1"></div>
           </div>
           <button onclick="saveBudgetSettings()" class="w-full py-2.5 bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">
@@ -508,7 +487,7 @@
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-key text-teal-600"></i>
-            <span>Gemini APIキー設定 (レシートOCR・店舗特定用)</span>
+            <span>Gemini APIキー設定 (超高速レシートOCR)</span>
           </div>
           <p class="text-[11px] text-slate-500 leading-relaxed">
             Google AI Studioで発行したキーを入力してください。端末内（LocalStorage）にのみ安全に保存されます。
@@ -524,7 +503,7 @@
           </div>
         </div>
 
-        <!-- 標準データ管理（バックアップ・全復元） -->
+        <!-- 標準データ管理 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-database text-teal-600"></i>
@@ -578,9 +557,7 @@
       </button>
     </nav>
 
-    <!-- ================= モーダル群 ================= -->
-
-    <!-- A. レシート認識結果モーダル -->
+    <!-- モーダル群 -->
     <div id="receipt-scan-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -615,7 +592,6 @@
       </div>
     </div>
 
-    <!-- B. 明細詳細モーダル -->
     <div id="detail-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -633,14 +609,11 @@
       </div>
     </div>
 
-    <!-- C. カテゴリ管理モーダル -->
     <div id="category-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
         <div class="flex items-center justify-between border-b pb-2">
           <span class="font-bold text-slate-800 text-sm">カテゴリ編集</span>
-          <button onclick="closeModal('category-manage-modal')" class="text-slate-400">
-            <i class="fa-solid fa-xmark text-lg"></i>
-          </button>
+          <button onclick="closeModal('category-manage-modal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold">
           <button id="cat-tab-exp" onclick="setCategoryManageTab('expense')" class="py-1.5 rounded-lg bg-white shadow-xs text-teal-800">支出</button>
@@ -653,7 +626,6 @@
       </div>
     </div>
 
-    <!-- D. カテゴリ追加・編集フォーム -->
     <div id="category-edit-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -680,7 +652,6 @@
       </div>
     </div>
 
-    <!-- E. 支払い元管理モーダル -->
     <div id="payment-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
         <div class="flex items-center justify-between border-b pb-2">
@@ -695,7 +666,6 @@
       </div>
     </div>
 
-    <!-- F. 固定費追加モーダル -->
     <div id="fixed-expense-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -727,7 +697,6 @@
       </div>
     </div>
 
-    <!-- G. 汎用確認ダイアログ -->
     <div id="confirm-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-60 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl space-y-3 text-center">
         <div id="confirm-icon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-lg">
@@ -742,7 +711,6 @@
       </div>
     </div>
 
-    <!-- H. 集計対象フラグの説明モーダル -->
     <div id="inclusion-help-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -767,16 +735,17 @@
       </div>
     </div>
 
-    <!-- I. AI処理中ローディングモーダル -->
-    <div id="ai-loading-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white px-6">
+    <!-- AI処理中ローディングモーダル（タイマー表示付き） -->
+    <div id="ai-loading-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white px-6">
       <div class="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full animate-spin mb-3"></div>
       <div id="ai-loading-title" class="text-sm font-bold mb-1">AI処理中...</div>
+      <div id="ai-loading-timer" class="text-xs font-mono text-teal-300 font-bold mb-2">0秒経過</div>
       <p id="ai-loading-desc" class="text-xs text-slate-300 text-center leading-relaxed">
         レシートを解析しています。<br>数秒お待ちください。
       </p>
     </div>
 
-    <!-- J. トースト通知 -->
+    <!-- トースト通知 -->
     <div id="toast" class="hidden absolute top-14 left-1/2 -translate-x-1/2 z-60 bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center space-x-2">
       <i id="toast-icon" class="fa-solid fa-circle-check text-teal-400"></i>
       <span id="toast-msg">保存しました</span>
@@ -784,7 +753,6 @@
 
   </div>
 
-  <!-- JavaScript アプリケーションコア -->
   <script>
     const DEFAULT_CATEGORIES = {
       expense: [
@@ -1338,7 +1306,7 @@
       return total;
     }
 
-    // 店舗検索（思考オフで超高速化）
+    // 店舗検索（即座に応答）
     async function searchStore() {
       const q = document.getElementById("form-store").value.trim();
       if (!q) {
@@ -1366,16 +1334,13 @@
       setAiLoading(true, "店舗情報を検索中...", `「${q}」を照会しています`);
       try {
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const promptText = `電話番号または店名「${q}」から正式店舗名を判定し、以下のJSONのみで返してください。余計な解説は不要です。\n{"storeName": "正式店舗名"}`;
+
         const payload = {
-          contents: [{ parts: [{ text: `日本の電話番号または店名「${q}」から正式店舗名を推定しJSONで返してください。キー: storeName (文字列)` }] }],
+          contents: [{ parts: [{ text: promptText }] }],
           generationConfig: {
             responseMimeType: "application/json",
-            thinkingConfig: { thinkingBudget: 0 },
-            responseSchema: {
-              type: "OBJECT",
-              properties: { storeName: { type: "STRING" } },
-              required: ["storeName"]
-            }
+            maxOutputTokens: 100
           }
         };
 
@@ -1389,10 +1354,7 @@
         });
 
         if (res.status === 429) throw new Error("RATE_LIMIT");
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`APIエラー [HTTP ${res.status}]: ${errText}`);
-        }
+        if (!res.ok) throw new Error(`APIエラー [HTTP ${res.status}]`);
         const json = await res.json();
         const parsed = JSON.parse(json.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
         if (parsed.storeName) {
@@ -1405,8 +1367,7 @@
         if (err.message === "RATE_LIMIT") {
           showToast("無料枠の上限に達しました。時間を置いてお試しください", true);
         } else {
-          console.error(err);
-          showToast(err.message || "検索できませんでした。手入力してください", true);
+          showToast("検索できませんでした。手入力してください", true);
         }
       } finally {
         setAiLoading(false);
@@ -1485,7 +1446,9 @@
       renderDashboard();
     }
 
-    // レシート撮影（思考時間ゼロ化 & 画像圧縮最適化で超高速解析）
+    // ==========================================
+    // ★ 爆速レシート撮影 & 解析（responseSchema全廃＋画像軽量化）
+    // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1498,11 +1461,11 @@
         return;
       }
 
-      setAiLoading(true, "AIレシート解析中...", "品目・個別カテゴリ・電話番号を高速解析しています");
+      setAiLoading(true, "AIレシート解析中...", "文字認識と品目分類を行っています");
 
       try {
-        // 画像の長辺を900pxに圧縮しアップロード時間を大幅短縮
-        const base64Data = await compressImageToBase64(file, 900);
+        // 画像を長辺800px、圧縮0.65に最適化（約100KB前後で転送が一瞬）
+        const base64Data = await compressImageToBase64(file, 800);
         attachedImageBase64 = "data:image/jpeg;base64," + base64Data;
 
         document.getElementById("attached-image-thumb").src = attachedImageBase64;
@@ -1512,18 +1475,13 @@
         const availableCats = categories.expense.map(c => `${c.id}:${c.name}`).join(", ");
 
         const promptText = `
-添付されたレシートから情報を抽出してください。
-【必須項目】
-- store: 店名
-- phone: 電話番号 (レシート内にあればハイフン付き、なければ空文字)
-- date: 購入日 (YYYY-MM-DD形式。不明な場合は今日の日付 "${getTodayISO()}")
-- total_amount: 支払合計金額 (整数)
-- items: 品目ごとの配列。各品目について以下を必ず推定してください:
-  * name: 品目名 (例: 牛乳、パブロン、シャンプーなど)
-  * price: 金額 (割引やポイント利用はマイナス数値の行として追加しても可)
-  * categoryId: 以下のカテゴリIDから各品目に最適なものを1つ選定 [${availableCats}]
-    ※重要: ドラッグストアなどの場合、医薬品は"medical"、食品は"food"、日用品は"daily"のように品目ごとに正確に割り振ってください。
-        `;
+添付画像はレシートです。思考や余計な推論は一切不要です。直接以下のJSONフォーマットのみを出力してください。マークダウンや説明文は絶対に含めないでください。
+
+{"store":"店名","phone":"電話番号","date":"YYYY-MM-DD","total_amount":合計金額,"items":[{"name":"品目名","price":金額,"categoryId":"カテゴリID"}]}
+
+利用可能なカテゴリID: [${availableCats}]
+ドラッグストア等の場合、医薬品は"medical"、食品は"food"、日用品は"daily"を割り当ててください。日付不明時は"${getTodayISO()}"。
+        `.trim();
 
         const payload = {
           contents: [{
@@ -1535,29 +1493,7 @@
           }],
           generationConfig: {
             responseMimeType: "application/json",
-            thinkingConfig: { thinkingBudget: 0 }, // 思考をオフにして即座に応答（超高速化）
-            responseSchema: {
-              type: "OBJECT",
-              properties: {
-                store: { type: "STRING" },
-                phone: { type: "STRING" },
-                date: { type: "STRING" },
-                total_amount: { type: "NUMBER" },
-                items: {
-                  type: "ARRAY",
-                  items: {
-                    type: "OBJECT",
-                    properties: {
-                      name: { type: "STRING" },
-                      price: { type: "NUMBER" },
-                      categoryId: { type: "STRING" }
-                    },
-                    required: ["name", "price", "categoryId"]
-                  }
-                }
-              },
-              required: ["store", "total_amount", "items"]
-            }
+            maxOutputTokens: 2048
           }
         };
 
@@ -1575,8 +1511,10 @@
           const errText = await res.text();
           throw new Error(`APIエラー [HTTP ${res.status}]: ${errText}`);
         }
+
         const json = await res.json();
-        const parsed = JSON.parse(json.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
+        const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        const parsed = JSON.parse(rawText);
 
         pendingScanResult = parsed;
         showScannedReceiptModal(parsed);
@@ -1584,7 +1522,7 @@
       } catch (err) {
         console.error(err);
         if (err.message === "RATE_LIMIT") {
-          showToast("無料枠の一時上限に達しました。少し待って再度お試しください", true);
+          showToast("無料枠の上限に達しました。少し待って再試行してください", true);
         } else {
           alert(`解析失敗:\n${err.message}`);
           showToast("解析失敗: 写真を再度確認してください", true);
@@ -1613,8 +1551,7 @@
             canvas.height = h;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, w, h);
-            // 圧縮率を0.7に調整してファイル容量を削減
-            resolve(canvas.toDataURL("image/jpeg", 0.7).split(",")[1]);
+            resolve(canvas.toDataURL("image/jpeg", 0.65).split(",")[1]);
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -2553,13 +2490,23 @@
       openModal("confirm-modal");
     }
 
+    let aiTimerInterval = null;
     function setAiLoading(show, title = "AI処理中...", desc = "") {
       const modal = document.getElementById("ai-loading-modal");
+      const timerEl = document.getElementById("ai-loading-timer");
       if (show) {
         document.getElementById("ai-loading-title").textContent = title;
         document.getElementById("ai-loading-desc").innerHTML = desc;
+        let sec = 0;
+        if (timerEl) timerEl.textContent = "0秒経過";
+        if (aiTimerInterval) clearInterval(aiTimerInterval);
+        aiTimerInterval = setInterval(() => {
+          sec++;
+          if (timerEl) timerEl.textContent = `${sec}秒経過`;
+        }, 1000);
         modal.classList.remove("hidden");
       } else {
+        if (aiTimerInterval) clearInterval(aiTimerInterval);
         modal.classList.add("hidden");
       }
     }
