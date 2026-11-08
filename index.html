@@ -64,7 +64,6 @@
 
       <!-- 1. ダッシュボード・入力 タブ -->
       <section id="tab-input" class="p-4 space-y-4 fade-in">
-        <!-- 予算プログレスカード -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
@@ -104,17 +103,11 @@
           </div>
         </div>
 
-        <!-- 収支切替トグル -->
         <div class="grid grid-cols-2 gap-2 p-1 bg-slate-200 rounded-xl">
-          <button id="type-expense-btn" onclick="setInputType('expense')" class="py-2 text-center font-bold text-xs rounded-lg bg-teal-700 text-white shadow-xs transition">
-            支出
-          </button>
-          <button id="type-income-btn" onclick="setInputType('income')" class="py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition">
-            収入
-          </button>
+          <button id="type-expense-btn" onclick="setInputType('expense')" class="py-2 text-center font-bold text-xs rounded-lg bg-teal-700 text-white shadow-xs transition">支出</button>
+          <button id="type-income-btn" onclick="setInputType('income')" class="py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition">収入</button>
         </div>
 
-        <!-- レシート撮影バナー -->
         <div id="receipt-scan-banner" class="bg-gradient-to-r from-teal-700 to-emerald-600 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between">
           <div class="flex items-center space-x-2.5">
             <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0">
@@ -126,12 +119,9 @@
             </div>
           </div>
           <input type="file" id="receipt-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
-          <button onclick="document.getElementById('receipt-input').click()" class="bg-white text-teal-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow active:scale-95 transition shrink-0">
-            撮影する
-          </button>
+          <button onclick="document.getElementById('receipt-input').click()" class="bg-white text-teal-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow active:scale-95 transition shrink-0">撮影する</button>
         </div>
 
-        <!-- 入力フォーム本体 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -245,16 +235,12 @@
       <!-- 2. 履歴 タブ -->
       <section id="tab-history" class="p-4 space-y-4 hidden fade-in">
         <div class="flex items-center justify-between bg-white px-4 py-3 rounded-2xl shadow-sm border border-slate-100">
-          <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200">
-            <i class="fa-solid fa-chevron-left text-xs"></i>
-          </button>
+          <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"><i class="fa-solid fa-chevron-left text-xs"></i></button>
           <div class="text-center">
             <div id="history-period-title" class="text-sm font-bold text-slate-800"></div>
             <div id="history-period-sub" class="text-[10px] text-slate-400"></div>
           </div>
-          <button onclick="changePeriod(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200">
-            <i class="fa-solid fa-chevron-right text-xs"></i>
-          </button>
+          <button onclick="changePeriod(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"><i class="fa-solid fa-chevron-right text-xs"></i></button>
         </div>
 
         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 space-y-2">
@@ -299,21 +285,15 @@
         </div>
 
         <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-slate-100">
-          <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-            <i class="fa-solid fa-chevron-left text-xs"></i>
-          </button>
+          <button onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600"><i class="fa-solid fa-chevron-left text-xs"></i></button>
           <div id="anl-period-label" class="text-sm font-bold text-slate-800"></div>
-          <button onclick="changePeriod(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-            <i class="fa-solid fa-chevron-right text-xs"></i>
-          </button>
+          <button onclick="changePeriod(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600"><i class="fa-solid fa-chevron-right text-xs"></i></button>
         </div>
 
         <div id="anl-standard-view" class="space-y-4">
           <div id="anl-yearly-chart-card" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hidden">
             <div class="text-xs font-bold text-slate-500 mb-2">年間 収支推移 (1月〜12月)</div>
-            <div class="h-44">
-              <canvas id="yearlyChart"></canvas>
-            </div>
+            <div class="h-44"><canvas id="yearlyChart"></canvas></div>
           </div>
 
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
@@ -416,9 +396,7 @@
 
             <div id="setting-cycle-preview" class="p-2.5 bg-teal-50 border border-teal-200/70 rounded-xl text-teal-900 text-[11px] space-y-1"></div>
           </div>
-          <button onclick="saveBudgetSettings()" class="w-full py-2.5 bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">
-            予算・締め日設定を保存
-          </button>
+          <button onclick="saveBudgetSettings()" class="w-full py-2.5 bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">予算・締め日設定を保存</button>
         </div>
 
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
@@ -547,9 +525,7 @@
           </div>
         </div>
         <div class="pt-2">
-          <button onclick="applyScannedReceiptToForm()" class="w-full py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition">
-            入力フォームに反映する
-          </button>
+          <button onclick="applyScannedReceiptToForm()" class="w-full py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition">入力フォームに反映する</button>
         </div>
       </div>
     </div>
@@ -558,15 +534,11 @@
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
           <span class="font-bold text-slate-800 text-sm">明細詳細</span>
-          <button onclick="closeModal('detail-modal')" class="text-slate-400 hover:text-slate-600">
-            <i class="fa-solid fa-xmark text-lg"></i>
-          </button>
+          <button onclick="closeModal('detail-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <div id="detail-modal-body" class="overflow-y-auto flex-1 pr-1 space-y-3 text-xs"></div>
         <div class="pt-2">
-          <button id="detail-modal-delete-btn" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition">
-            この明細を削除
-          </button>
+          <button id="detail-modal-delete-btn" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition">この明細を削除</button>
         </div>
       </div>
     </div>
@@ -575,18 +547,14 @@
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
         <div class="flex items-center justify-between border-b pb-2">
           <span class="font-bold text-slate-800 text-sm">カテゴリ編集</span>
-          <button onclick="closeModal('category-manage-modal')" class="text-slate-400">
-            <i class="fa-solid fa-xmark text-lg"></i>
-          </button>
+          <button onclick="closeModal('category-manage-modal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold">
           <button id="cat-tab-exp" onclick="setCategoryManageTab('expense')" class="py-1.5 rounded-lg bg-white shadow-xs text-teal-800">支出</button>
           <button id="cat-tab-inc" onclick="setCategoryManageTab('income')" class="py-1.5 rounded-lg text-slate-500">収入</button>
         </div>
         <div id="category-manage-list" class="overflow-y-auto flex-1 space-y-2 pr-1 max-h-60"></div>
-        <button onclick="openCategoryEditForm(null)" class="w-full py-2.5 bg-teal-50 text-teal-700 font-bold text-xs rounded-xl border border-teal-200">
-          + 新規カテゴリを追加
-        </button>
+        <button onclick="openCategoryEditForm(null)" class="w-full py-2.5 bg-teal-50 text-teal-700 font-bold text-xs rounded-xl border border-teal-200">+ 新規カテゴリを追加</button>
       </div>
     </div>
 
@@ -663,9 +631,7 @@
 
     <div id="confirm-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-60 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl space-y-3 text-center">
-        <div id="confirm-icon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-lg">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
+        <div id="confirm-icon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
         <div id="confirm-title" class="font-bold text-slate-800 text-sm">確認</div>
         <p id="confirm-message" class="text-xs text-slate-500 leading-relaxed"></p>
         <div class="flex space-x-2 pt-2">
@@ -699,6 +665,7 @@
       </div>
     </div>
 
+    <!-- AI処理中ローディングモーダル -->
     <div id="ai-loading-modal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white px-6">
       <div class="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full animate-spin mb-3"></div>
       <div id="ai-loading-title" class="text-sm font-bold mb-1">AI処理中...</div>
@@ -706,6 +673,7 @@
       <p id="ai-loading-desc" class="text-xs text-slate-300 text-center leading-relaxed"></p>
     </div>
 
+    <!-- トースト通知 -->
     <div id="toast" class="hidden absolute top-14 left-1/2 -translate-x-1/2 z-60 bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center space-x-2">
       <i id="toast-icon" class="fa-solid fa-circle-check text-teal-400"></i>
       <span id="toast-msg">保存しました</span>
@@ -945,9 +913,7 @@
     function isNonBusinessDay(date, target) {
       const day = date.getDay();
       const hol = isJapaneseHoliday(date);
-      if (target === "holiday_only") {
-        return { isOff: hol.isHoliday, reason: hol.name || "" };
-      }
+      if (target === "holiday_only") return { isOff: hol.isHoliday, reason: hol.name || "" };
       if (day === 0) return { isOff: true, reason: "日曜日" };
       if (day === 6) return { isOff: true, reason: "土曜日" };
       if (hol.isHoliday) return { isOff: true, reason: hol.name };
@@ -1292,13 +1258,13 @@
 
       setAiLoading(true, "店舗情報を検索中...", `「${q}」を照会しています`);
       try {
-        const promptText = `電話番号または店名「${q}」から正式店舗名を判定し、JSONのみで返してください。\n{"storeName": "正式店舗名"}`;
+        const promptText = `電話番号または店名「${q}」から正式店舗名を1つ判定し、JSONのみで返してください。\n{"storeName": "正式店舗名"}`;
         const payload = {
           contents: [{ parts: [{ text: promptText }] }],
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingBudget: 0 },
+            thinkingConfig: { thinkingLevel: "low" },
             maxOutputTokens: 60
           }
         };
@@ -1398,7 +1364,7 @@
     }
 
     // ==========================================
-    // レシート解析（gemini-3.8-flash 直結）
+    // レシート解析（6秒実績の 3.1-flash-lite / 3.8-flash 連携）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1428,17 +1394,15 @@
         document.getElementById("ai-loading-title").textContent = "② Google AIへ通信中...";
         document.getElementById("ai-loading-desc").innerHTML = `画像処理: ${compressSec}秒 (${kbSize}KB)<br>AIからの即時応答を待っています`;
 
-        const availableCats = categories.expense.map(c => c.id).join(", ");
+        const availableCats = categories.expense.map(c => `${c.id}:${c.name}`).join(", ");
         
         const promptText = `
-レシート画像から品目を抽出し、文字数を最小限に抑えた以下の極小JSONフォーマットのみを出力してください。
-思考プロセスや解説、マークダウン記法(バッククォート)は一切含めず、純粋なJSONテキストだけを返してください。
+レシート画像から文字を読み取り、以下のJSONのみを即座に出力してください。
+思考プロセスや検算、マークダウン枠は不要です。
 
-{"s":"店名","p":"電話番号","d":"YYYY-MM-DD","t":合計金額,"i":[["品名",金額,"カテゴリID"]]}
+{"store":"店名","phone":"電話番号","date":"YYYY-MM-DD","total_amount":0,"items":[{"name":"品名","price":0,"categoryId":"food"}]}
 
-- カテゴリID候補: [${availableCats}] (医薬品はmedical、食品はfood、日用品はdaily)
-- 品名は略称で短くし、余計な記号やコードは省いてください。
-- 日付不明時は "${getTodayISO()}"。
+利用可能カテゴリID: [${availableCats}] (医薬品はmedical、食品はfood、日用品はdaily)。日付不明時は "${getTodayISO()}"。
         `.trim();
 
         const payload = {
@@ -1452,49 +1416,24 @@
           generationConfig: {
             responseMimeType: "application/json",
             temperature: 0,
-            thinkingConfig: { thinkingBudget: 0 }
+            thinkingConfig: { thinkingLevel: "low" }
           }
         };
 
         const t2 = performance.now();
-        const res = await callGeminiAPI(apiKey, payload);
+        const { res, usedModel } = await callGeminiAPI(apiKey, payload);
         const t3 = performance.now();
         const netSec = ((t3 - t2) / 1000).toFixed(1);
 
         const json = await res.json();
-        const usage = json.usageMetadata || {};
-        const thoughtTokens = usage.thoughtsTokenCount || 0;
-        const outTokens = usage.candidatesTokenCount || 0;
-        const diagText = `[診断] 通信:${netSec}秒 | 出力:${outTokens} | 画像:${kbSize}KB`;
+        const diagText = `[診断] モデル:${usedModel} | 通信:${netSec}秒 | 画像:${kbSize}KB`;
 
         let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         rawText = cleanJsonText(rawText);
         const parsed = JSON.parse(rawText);
 
-        let items = [];
-        if (Array.isArray(parsed.i)) {
-          items = parsed.i.map(item => {
-            if (Array.isArray(item)) {
-              return { name: String(item[0] || "品目"), price: parseInt(item[1], 10) || 0, categoryId: item[2] || "food" };
-            } else if (typeof item === 'object' && item !== null) {
-              return { name: item.name || "品目", price: item.price || 0, categoryId: item.categoryId || "food" };
-            }
-            return { name: "品目", price: 0, categoryId: "food" };
-          });
-        } else if (Array.isArray(parsed.items)) {
-          items = parsed.items;
-        }
-
-        const standardized = {
-          store: parsed.s || parsed.store || "不明",
-          phone: parsed.p || parsed.phone || "",
-          date: parsed.d || parsed.date || getTodayISO(),
-          total_amount: parseInt(parsed.t || parsed.total_amount || 0, 10),
-          items: items
-        };
-
-        pendingScanResult = standardized;
-        showScannedReceiptModal(standardized, diagText);
+        pendingScanResult = parsed;
+        showScannedReceiptModal(parsed, diagText);
 
       } catch (err) {
         console.error(err);
@@ -1522,24 +1461,35 @@
       return cleaned;
     }
 
-    // gemini-3.8-flash への絶対URL直接送信（405防止）
+    // Google API 直接通信関数（405防止：絶対URL固定）
     async function callGeminiAPI(apiKey, payload) {
-      const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=$){encodeURIComponent(apiKey)}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify(payload)
-      });
+      const models = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
+      let lastErr = null;
 
-      if (response.status === 429) throw new Error("RATE_LIMIT");
-      if (!response.ok) {
-        const errBody = await response.text();
-        throw new Error(`[gemini-3.8-flash] HTTP ${response.status}: ${errBody}`);
+      for (const m of models) {
+        try {
+          const endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/)" + m + ":generateContent?key=" + encodeURIComponent(apiKey);
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": apiKey
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.status === 429) throw new Error("RATE_LIMIT");
+          if (response.ok) {
+            return { res: response, usedModel: m };
+          }
+          const errBody = await response.text();
+          lastErr = new Error(`[${m}] HTTP ${response.status}: ${errBody}`);
+        } catch (e) {
+          if (e.message === "RATE_LIMIT") throw e;
+          lastErr = e;
+        }
       }
-      return response;
+      throw lastErr || new Error("Google APIへの通信に失敗しました");
     }
 
     function compressReceiptImage(file, targetShortSide = 900) {
@@ -1985,9 +1935,7 @@
         row.innerHTML = `
           <div class="flex justify-between items-center text-xs">
             <span class="font-bold text-slate-700 flex items-center space-x-1.5">
-              <span class="w-5 h-5 rounded-full ${c.color} inline-flex items-center justify-center text-[9px]">
-                <i class="fa-solid ${c.icon}"></i>
-              </span>
+              <span class="w-5 h-5 rounded-full ${c.color} inline-flex items-center justify-center text-[9px]"><i class="fa-solid ${c.icon}"></i></span>
               <span>${c.name}</span>
             </span>
             <span class="font-black text-slate-800">¥${val.toLocaleString()} <span class="text-slate-400 font-normal text-[10px]">(${pct}%)</span></span>
