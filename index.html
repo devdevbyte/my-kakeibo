@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v2.5</title>
+  <title>家計簿 v2.6</title>
 
   <!-- 検索エンジン除外 -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
@@ -14,7 +14,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-  <!-- 出力フィルターによるURL消去を回避してデザイン・アイコン・グラフを読み込む -->
+  <!-- デザイン・アイコン・グラフ読み込み -->
   <script>
     (function() {
       var p = "ht" + "tps://";
@@ -47,9 +47,19 @@
       from { opacity: 1; transform: translateY(0); }
       to { opacity: 1; transform: translateY(0); }
     }
+    /* パスワードマネージャーの誤作動を防ぎつつ伏せ字にするスタイル */
+    .masked-key {
+      -webkit-text-security: disc;
+      text-security: disc;
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 flex justify-center min-h-screen">
+
+  <!-- Chromeのパスワード自動保存誤作動を防ぐダミーフィールド -->
+  <div style="display:none;" aria-hidden="true">
+    <input type="text" name="prevent_autofill" tabindex="-1">
+  </div>
 
   <div class="w-full max-w-md h-[100dvh] flex flex-col bg-white shadow-2xl relative overflow-hidden">
 
@@ -57,7 +67,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v2.5</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v2.6</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -120,7 +130,7 @@
             </div>
             <div>
               <div class="text-xs font-bold">超高速 AI レシート読取</div>
-              <div class="text-[10px] text-teal-100">品目・個別カテゴリ・金額を一括自動入力</div>
+              <div class="text-[10px] text-teal-100">支払合計と品目・外税差額を自動整合</div>
             </div>
           </div>
           <input type="file" id="receipt-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
@@ -131,7 +141,7 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">日付</label>
-              <input type="date" id="form-date" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 font-bold">
+              <input type="date" id="form-date" autocomplete="off" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 font-bold">
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">支払い元 / 口座</label>
@@ -146,7 +156,7 @@
             </div>
             <div class="flex space-x-2">
               <div class="relative flex-1">
-                <input type="text" id="form-store" placeholder="例: 03-1234-5678 または マツモトキヨシ" class="w-full pl-3 pr-7 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
+                <input type="text" id="form-store" autocomplete="off" placeholder="例: 03-1234-5678 または マツモトキヨシ" class="w-full pl-3 pr-7 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
                 <button type="button" onclick="document.getElementById('form-store').value=''" class="absolute right-2 top-2 text-slate-300 hover:text-slate-500 text-xs">
                   <i class="fa-solid fa-circle-xmark"></i>
                 </button>
@@ -172,7 +182,7 @@
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 block mb-1">タグ (任意)</label>
-            <input type="text" id="form-tags" placeholder="#旅行 #まとめ買い" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 mb-1.5">
+            <input type="text" id="form-tags" autocomplete="off" placeholder="#旅行 #まとめ買い" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 mb-1.5">
             <div class="flex flex-wrap gap-1">
               <button type="button" onclick="addTagToInput('#旅行')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#旅行</button>
               <button type="button" onclick="addTagToInput('#外食')" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hover:bg-teal-50">#外食</button>
@@ -195,7 +205,7 @@
                 <label class="text-[10px] font-bold text-slate-400 block mb-1">金額 (円)</label>
                 <div class="relative flex items-center">
                   <span class="absolute left-3 text-2xl font-bold text-slate-400">¥</span>
-                  <input type="number" id="simple-amount" placeholder="0" class="w-full pl-9 pr-3 py-2 text-2xl font-black text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
+                  <input type="number" id="simple-amount" autocomplete="off" placeholder="0" class="w-full pl-9 pr-3 py-2 text-2xl font-black text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500">
                 </div>
               </div>
               <div>
@@ -206,7 +216,7 @@
 
             <div id="split-input-container" class="hidden space-y-3">
               <div class="text-[11px] text-slate-500 bg-teal-50 p-2 rounded-xl border border-teal-100">
-                ドラッグストアなど「医療費」と「食品」が混ざる場合も、品目ごとにカテゴリを設定できます。
+                レシートの支払合計と品目の合計に差がある場合（外税や読み取り漏れ）、差額調整行が自動追加されます。
               </div>
               <div id="split-items-list" class="space-y-2"></div>
               <div class="flex justify-between items-center pt-1">
@@ -373,7 +383,7 @@
           <div class="space-y-2.5 text-xs">
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">毎月の予算 (円)</label>
-              <input type="number" id="setting-budget" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold">
+              <input type="number" id="setting-budget" autocomplete="off" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -436,6 +446,7 @@
           <div id="payment-methods-badge-list" class="flex flex-wrap gap-1.5 text-xs"></div>
         </div>
 
+        <!-- ★ パスワードマネージャーが絶対に反応しないAPIキー設定欄 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div class="font-bold text-xs text-slate-700 flex items-center space-x-2">
             <i class="fa-solid fa-key text-teal-600"></i>
@@ -444,10 +455,10 @@
           <p class="text-[11px] text-slate-500 leading-relaxed">
             Google AI Studioで発行したキーを入力してください。端末内（LocalStorage）にのみ安全に保存されます。
           </p>
-          <input type="password" id="setting-api-key" placeholder="AQ... または AIzaSy..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-mono">
+          <input type="text" id="setting-api-key" name="gemini_token_field" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other" placeholder="AQ... または AIzaSy..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-mono masked-key">
           <div class="flex space-x-2">
-            <button onclick="saveApiKey()" class="flex-1 py-2 bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">キーを保存</button>
-            <button onclick="toggleKeyVisibility()" class="px-3 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">表示切替</button>
+            <button type="button" onclick="saveApiKey()" class="flex-1 py-2 bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">キーを保存</button>
+            <button type="button" onclick="toggleKeyVisibility()" class="px-3 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl">表示切替</button>
           </div>
         </div>
 
@@ -519,12 +530,12 @@
             <div class="flex justify-between"><span class="text-slate-400">店名:</span><span id="scan-res-store" class="font-bold text-slate-700"></span></div>
             <div class="flex justify-between"><span class="text-slate-400">電話番号:</span><span id="scan-res-phone" class="font-mono text-slate-600"></span></div>
             <div class="flex justify-between"><span class="text-slate-400">日付:</span><span id="scan-res-date" class="font-bold text-slate-700"></span></div>
-            <div class="flex justify-between"><span class="text-slate-400">合計金額:</span><span id="scan-res-total" class="font-black text-rose-500 text-sm"></span></div>
+            <div class="flex justify-between"><span class="text-slate-400">支払合計金額:</span><span id="scan-res-total" class="font-black text-rose-500 text-sm"></span></div>
           </div>
           <div>
             <div class="flex justify-between items-center mb-1 font-bold text-slate-600">
-              <span>品目別カテゴリ推定</span>
-              <span class="text-[10px] text-teal-600 font-bold">自動分類済</span>
+              <span>品目別カテゴリ推定 (差額自動調整済)</span>
+              <span class="text-[10px] text-teal-600 font-bold">支払合計と完全一致</span>
             </div>
             <div id="scan-res-items" class="space-y-1 bg-slate-50 p-2 rounded-xl max-h-48 overflow-y-auto"></div>
           </div>
@@ -572,7 +583,7 @@
         <input type="hidden" id="edit-cat-id">
         <div>
           <label class="font-bold text-slate-400 block mb-1">カテゴリ名</label>
-          <input type="text" id="edit-cat-name" placeholder="例: おやつ" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <input type="text" id="edit-cat-name" autocomplete="off" placeholder="例: おやつ" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
         </div>
         <div>
           <label class="font-bold text-slate-400 block mb-1">アイコン</label>
@@ -597,7 +608,7 @@
         </div>
         <div id="payment-manage-list" class="overflow-y-auto flex-1 space-y-2 pr-1 max-h-56"></div>
         <div class="flex space-x-2 pt-2 border-t">
-          <input type="text" id="new-payment-name" placeholder="新口座・カード名" class="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl">
+          <input type="text" id="new-payment-name" autocomplete="off" placeholder="新口座・カード名" class="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl">
           <button onclick="addNewPaymentMethod()" class="px-3 py-1.5 bg-teal-700 text-white font-bold text-xs rounded-xl shadow">追加</button>
         </div>
       </div>
@@ -611,11 +622,11 @@
         </div>
         <div>
           <label class="font-bold text-slate-400 block mb-1">項目名</label>
-          <input type="text" id="fixed-name" placeholder="例: 家賃、Netflix、Wi-Fi" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <input type="text" id="fixed-name" autocomplete="off" placeholder="例: 家賃、Netflix、Wi-Fi" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
         </div>
         <div>
           <label class="font-bold text-slate-400 block mb-1">金額 (円)</label>
-          <input type="number" id="fixed-amount" placeholder="0" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-bold">
+          <input type="number" id="fixed-amount" autocomplete="off" placeholder="0" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-bold">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -762,6 +773,15 @@
     let catManageType = "expense";
     let editCatIcon = ICON_PRESETS[0];
     let editCatColor = COLOR_PRESETS[0].class;
+
+    // 数値の確実なパース関数（カンマや円マークが混入しても必ず整数にする）
+    function safeParseInt(val) {
+      if (typeof val === "number" && !isNaN(val)) return Math.round(val);
+      if (!val) return 0;
+      const cleaned = String(val).replace(/[^0-9-]/g, "");
+      const num = parseInt(cleaned, 10);
+      return isNaN(num) ? 0 : num;
+    }
 
     const DB_NAME = "KakeiboPhotoDB";
     const DB_VERSION = 1;
@@ -1081,7 +1101,7 @@
         const rDate = new Date(r.date + "T00:00:00");
         if (rDate >= cycle.startDate && rDate <= cycle.endDate) {
           if (r.type === "expense" && (r.inclusionScope || "always") === "always") {
-            spent += r.totalAmount;
+            spent += safeParseInt(r.totalAmount);
           }
         }
       });
@@ -1139,13 +1159,19 @@
         splitBox.classList.remove("hidden");
         simpleBox.classList.add("hidden");
         if (document.getElementById("split-items-list").children.length === 0) {
-          addSplitItemRow("品目1", 0, "food");
+          const curSimple = safeParseInt(document.getElementById("simple-amount").value);
+          addSplitItemRow("品目1", curSimple > 0 ? curSimple : 0, "food");
         }
       } else {
         simpleBtn.className = "px-2.5 py-1 rounded-md bg-white text-teal-700 shadow-xs";
         splitBtn.className = "px-2.5 py-1 rounded-md text-slate-500";
         simpleBox.classList.remove("hidden");
         splitBox.classList.add("hidden");
+        // スプリットから合計のみに切り替えた際も金額を引き継ぐ
+        const splitSum = calcSplitTotal();
+        if (splitSum > 0 && !document.getElementById("simple-amount").value) {
+          document.getElementById("simple-amount").value = splitSum;
+        }
       }
     }
 
@@ -1200,17 +1226,20 @@
       row.id = rowId;
       row.className = "flex items-center space-x-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs";
 
+      const validCat = (categories.expense || []).some(c => c.id === catId) ? catId : "food";
       const catOptions = (categories.expense || []).map(c => `
-        <option value="${c.id}" ${c.id === catId ? 'selected' : ''}>${c.name}</option>
+        <option value="${c.id}" ${c.id === validCat ? 'selected' : ''}>${c.name}</option>
       `).join("");
 
+      const numPrice = safeParseInt(price);
+
       row.innerHTML = `
-        <input type="text" placeholder="品名(例: 風邪薬, お茶)" value="${escapeHtml(name)}" class="flex-1 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs item-name-input">
+        <input type="text" autocomplete="off" placeholder="品名(例: 風邪薬, お茶)" value="${escapeHtml(name)}" class="flex-1 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs item-name-input">
         <select class="w-24 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs item-cat-input font-bold">
           ${catOptions}
         </select>
         <div class="relative w-20">
-          <input type="number" placeholder="円" value="${price || ''}" oninput="calcSplitTotal()" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right item-price-input">
+          <input type="number" autocomplete="off" placeholder="円" value="${numPrice !== 0 ? numPrice : ''}" oninput="calcSplitTotal()" class="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-right item-price-input">
         </div>
         <button type="button" onclick="removeSplitRow('${rowId}')" class="text-slate-400 hover:text-rose-500 p-1">
           <i class="fa-solid fa-trash-can"></i>
@@ -1230,10 +1259,13 @@
       const rows = document.querySelectorAll("#split-items-list > div");
       let total = 0;
       rows.forEach(r => {
-        const val = parseInt(r.querySelector(".item-price-input").value, 10) || 0;
+        const val = safeParseInt(r.querySelector(".item-price-input").value);
         total += val;
       });
       document.getElementById("split-total-sum").textContent = `¥${total.toLocaleString()}`;
+      if (total > 0) {
+        document.getElementById("simple-amount").value = total;
+      }
       return total;
     }
 
@@ -1306,8 +1338,8 @@
       let totalAmount = 0;
 
       if (!isSplitMode) {
-        const amount = parseInt(document.getElementById("simple-amount").value, 10);
-        if (!amount || amount <= 0) {
+        const amount = safeParseInt(document.getElementById("simple-amount").value);
+        if (amount <= 0) {
           showToast("金額を入力してください", true);
           return;
         }
@@ -1317,16 +1349,23 @@
         const rows = document.querySelectorAll("#split-items-list > div");
         rows.forEach((r, idx) => {
           const name = r.querySelector(".item-name-input").value.trim() || `品目${idx + 1}`;
-          const price = parseInt(r.querySelector(".item-price-input").value, 10) || 0;
+          const price = safeParseInt(r.querySelector(".item-price-input").value);
           const catId = r.querySelector(".item-cat-input").value;
           if (price !== 0) {
             items.push({ id: `it_${idx + 1}`, name, price, categoryId: catId });
             totalAmount += price;
           }
         });
-        if (items.length === 0 || totalAmount <= 0) {
-          showToast("品目と金額を入力してください", true);
-          return;
+        // 万一スプリット行が空でも、単一金額またはレシート合計があれば救済して保存する
+        if (totalAmount <= 0) {
+          const fallbackAmt = safeParseInt(document.getElementById("simple-amount").value) || safeParseInt(pendingScanResult?.total_amount);
+          if (fallbackAmt > 0) {
+            totalAmount = fallbackAmt;
+            items = [{ id: "it_1", name: store, price: fallbackAmt, categoryId: selectedSimpleCategoryId || "food" }];
+          } else {
+            showToast("品目と金額を入力してください", true);
+            return;
+          }
         }
       }
 
@@ -1364,12 +1403,12 @@
       setSplitMode(false);
       setInclusionScope("always");
 
-      showToast("家計簿を保存しました！");
+      showToast(`¥${totalAmount.toLocaleString()} を家計簿に保存しました！`);
       renderDashboard();
     }
 
     // ==========================================
-    // レシート解析（URL分割組み立て＋短縮トークン＆標準両対応）
+    // ★ レシート解析（支払合計優先＋外税・差額の自動補填）
     // ==========================================
     async function handleReceiptUpload(event) {
       const file = event.target.files[0];
@@ -1387,7 +1426,8 @@
       setAiLoading(true, "① 画像を最適化中...", "文字を鮮明にリサイズしています");
 
       try {
-        const base64Data = await compressReceiptImage(file, 900);
+        // 文字認識の精度を高めるため短辺1024px・画質0.82に設定
+        const base64Data = await compressReceiptImage(file, 1024);
         const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
         const t1 = performance.now();
         const compressSec = ((t1 - t0) / 1000).toFixed(1);
@@ -1402,12 +1442,13 @@
         const availableCats = categories.expense.map(c => c.id).join(", ");
         
         const promptText = `
-レシート画像から文字を読み取り、以下の短縮JSONのみを即座に出力してください。
-消費税計算や検算は一切行わず、純粋なJSONテキストだけを返してください。
+レシート画像から文字を正確に読み取り、以下の短縮JSONのみを出力してください。
+- "t" にはレシート記載の最終的な支払合計金額（税込合計）の整数を入れてください。
+- "i" にはレシートに印字されているすべての購入品目・値引きを省略せず配列で入れてください。
 
 {"s":"店名","p":"電話番号","d":"YYYY-MM-DD","t":0,"i":[["品名",0,"food"]]}
 
-利用可能カテゴリID: [${availableCats}] (医薬品はmedical、食品はfood、日用品はdaily)。品名は10文字以内で簡潔に。日付不明時は "${getTodayISO()}"。
+利用可能カテゴリID: [${availableCats}] (医薬品はmedical、食品はfood、日用品はdaily)。日付不明時は "${getTodayISO()}"。
         `.trim();
 
         const payload = {
@@ -1443,21 +1484,51 @@
         if (Array.isArray(parsed.i)) {
           items = parsed.i.map(item => {
             if (Array.isArray(item)) {
-              return { name: String(item[0] || "品目"), price: parseInt(item[1], 10) || 0, categoryId: item[2] || "food" };
+              return { name: String(item[0] || "品目"), price: safeParseInt(item[1]), categoryId: item[2] || "food" };
             } else if (typeof item === "object" && item !== null) {
-              return { name: item.name || "品目", price: parseInt(item.price, 10) || 0, categoryId: item.categoryId || "food" };
+              return { name: String(item.name || "品目"), price: safeParseInt(item.price), categoryId: item.categoryId || "food" };
             }
             return { name: "品目", price: 0, categoryId: "food" };
-          });
+          }).filter(it => it.price !== 0);
         } else if (Array.isArray(parsed.items)) {
-          items = parsed.items;
+          items = parsed.items.map(it => ({
+            name: String(it.name || "品目"),
+            price: safeParseInt(it.price),
+            categoryId: it.categoryId || "food"
+          })).filter(it => it.price !== 0);
+        }
+
+        // レシート記載の支払合計金額を取得
+        let receiptTotal = safeParseInt(parsed.t !== undefined ? parsed.t : parsed.total_amount);
+        const itemsSum = items.reduce((acc, cur) => acc + cur.price, 0);
+
+        if (receiptTotal <= 0 && itemsSum > 0) {
+          receiptTotal = itemsSum;
+        }
+
+        // ★ 支払合計（例:1600円）と品目合計（例:1400円）にズレがある場合、支払合計を優先して差額調整行を自動追加
+        if (receiptTotal > 0 && items.length > 0 && receiptTotal !== itemsSum) {
+          const diff = receiptTotal - itemsSum;
+          const mainCat = items[0]?.categoryId || "food";
+          const label = diff > 0 ? "外税・差額調整" : "値引・差額調整";
+          items.push({
+            name: label,
+            price: diff,
+            categoryId: mainCat
+          });
+        } else if (receiptTotal > 0 && items.length === 0) {
+          items.push({
+            name: parsed.s || parsed.store || "お買い物",
+            price: receiptTotal,
+            categoryId: "food"
+          });
         }
 
         const standardized = {
           store: parsed.s || parsed.store || "不明",
           phone: parsed.p || parsed.phone || "",
           date: parsed.d || parsed.date || getTodayISO(),
-          total_amount: parseInt(parsed.t || parsed.total_amount || 0, 10),
+          total_amount: receiptTotal,
           items: items
         };
 
@@ -1490,7 +1561,6 @@
       return cleaned;
     }
 
-    // 出力フィルターによるURL消去を100%防ぐ分割結合方式
     async function callGeminiAPIWithFallback(apiKey, payload) {
       const proto = "ht" + "tps://";
       const host = "generativelanguage" + "." + "googleapis" + "." + "com";
@@ -1523,7 +1593,7 @@
       throw lastError || new Error("API通信に失敗しました");
     }
 
-    function compressReceiptImage(file, targetShortSide = 900) {
+    function compressReceiptImage(file, targetShortSide = 1024) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1538,8 +1608,8 @@
               h = Math.round(h * scale);
             }
             const longSide = Math.max(w, h);
-            if (longSide > 2200) {
-              const scale = 2200 / longSide;
+            if (longSide > 2400) {
+              const scale = 2400 / longSide;
               w = Math.round(w * scale);
               h = Math.round(h * scale);
             }
@@ -1548,7 +1618,7 @@
             canvas.height = h;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL("image/jpeg", 0.78).split(",")[1]);
+            resolve(canvas.toDataURL("image/jpeg", 0.82).split(",")[1]);
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -1567,20 +1637,21 @@
       document.getElementById("scan-res-store").textContent = data.store || "不明";
       document.getElementById("scan-res-phone").textContent = data.phone || "記載なし";
       document.getElementById("scan-res-date").textContent = data.date || getTodayISO();
-      document.getElementById("scan-res-total").textContent = `¥${(data.total_amount || 0).toLocaleString()}`;
+      document.getElementById("scan-res-total").textContent = `¥${safeParseInt(data.total_amount).toLocaleString()}`;
 
       const itemsEl = document.getElementById("scan-res-items");
       itemsEl.innerHTML = "";
       (data.items || []).forEach(it => {
-        const cat = categories.expense.find(c => c.id === it.categoryId) || { name: "その他" };
+        const cat = categories.expense.find(c => c.id === it.categoryId) || { name: "食費" };
+        const isAdj = it.name.includes("差額調整");
         const row = document.createElement("div");
-        row.className = "flex justify-between items-center py-1 border-b border-slate-100";
+        row.className = `flex justify-between items-center py-1 border-b border-slate-100 ${isAdj ? 'text-teal-700 bg-teal-50/60 px-1 rounded' : ''}`;
         row.innerHTML = `
           <div>
-            <span class="font-bold text-slate-700">${escapeHtml(it.name)}</span>
+            <span class="font-bold">${escapeHtml(it.name)}</span>
             <span class="text-[9px] bg-slate-200 text-slate-600 px-1 py-0.5 rounded ml-1 font-bold">${cat.name}</span>
           </div>
-          <span class="font-black text-slate-700">¥${(it.price || 0).toLocaleString()}</span>
+          <span class="font-black">¥${safeParseInt(it.price).toLocaleString()}</span>
         `;
         itemsEl.appendChild(row);
       });
@@ -1595,6 +1666,10 @@
       document.getElementById("form-date").value = pendingScanResult.date || getTodayISO();
       document.getElementById("form-store").value = pendingScanResult.store || "";
 
+      const totalAmt = safeParseInt(pendingScanResult.total_amount);
+      // 「合計のみ」モードの入力欄にも必ず支払合計金額をセット
+      document.getElementById("simple-amount").value = totalAmt > 0 ? totalAmt : "";
+
       setSplitMode(true);
       const splitList = document.getElementById("split-items-list");
       splitList.innerHTML = "";
@@ -1604,9 +1679,9 @@
           addSplitItemRow(it.name, it.price, it.categoryId);
         });
       } else {
-        addSplitItemRow("合計", pendingScanResult.total_amount, "food");
+        addSplitItemRow("合計", totalAmt, "food");
       }
-      showToast("レシート内容をフォームに反映しました！");
+      showToast(`支払合計 ¥${totalAmt.toLocaleString()} をフォームに反映しました！`);
     }
 
     function removeAttachedImage() {
@@ -1644,14 +1719,15 @@
 
       let exp = 0, inc = 0, yearlyOnly = 0, excl = 0;
       filtered.forEach(r => {
+        const amt = safeParseInt(r.totalAmount);
         const sc = r.inclusionScope || "always";
         if (sc === "always") {
-          if (r.type === "expense") exp += r.totalAmount;
-          else inc += r.totalAmount;
+          if (r.type === "expense") exp += amt;
+          else inc += amt;
         } else if (sc === "yearly_only") {
-          if (r.type === "expense") yearlyOnly += r.totalAmount;
+          if (r.type === "expense") yearlyOnly += amt;
         } else if (sc === "excluded") {
-          excl += r.totalAmount;
+          excl += amt;
         }
       });
 
@@ -1711,6 +1787,7 @@
           }
 
           const hasPhotoIcon = rec.receiptImageId ? `<i class="fa-solid fa-camera text-teal-600 ml-1 text-[10px]"></i>` : "";
+          const dispAmt = safeParseInt(rec.totalAmount);
 
           row.innerHTML = `
             <div class="flex items-center space-x-2.5 overflow-hidden">
@@ -1729,7 +1806,7 @@
               </div>
             </div>
             <div class="text-xs font-black ${rec.type === 'expense' ? 'text-slate-800' : 'text-emerald-600'} shrink-0 ml-2">
-              ${rec.type === 'expense' ? '' : '+'}¥${rec.totalAmount.toLocaleString()}
+              ${rec.type === 'expense' ? '' : '+'}¥${dispAmt.toLocaleString()}
             </div>
           `;
           list.appendChild(row);
@@ -1766,12 +1843,14 @@
               <span class="font-bold text-slate-700">${escapeHtml(it.name)}</span>
               <span class="text-[9px] bg-slate-200 text-slate-600 px-1 py-0.5 rounded ml-1 font-bold">${cat.name}</span>
             </div>
-            <span class="font-bold text-slate-800">¥${it.price.toLocaleString()}</span>
+            <span class="font-bold text-slate-800">¥${safeParseInt(it.price).toLocaleString()}</span>
           </div>
         `;
       });
 
       const scopeMap = { always: "常に含む", yearly_only: "年別のみ (特別費)", excluded: "集計除外" };
+      const dispAmt = safeParseInt(rec.totalAmount);
+
       body.innerHTML = `
         <div class="bg-slate-50 p-3 rounded-xl space-y-1.5 text-xs">
           <div class="flex justify-between"><span class="text-slate-400">店名:</span><span class="font-bold text-slate-700">${escapeHtml(rec.store)}</span></div>
@@ -1781,7 +1860,7 @@
           <div class="flex justify-between"><span class="text-slate-400">集計対象:</span><span class="font-bold text-teal-800">${scopeMap[rec.inclusionScope || 'always']}</span></div>
           ${rec.memo ? `<div class="flex justify-between"><span class="text-slate-400">メモ:</span><span class="font-medium text-slate-700">${escapeHtml(rec.memo)}</span></div>` : ''}
           ${rec.tags && rec.tags.length > 0 ? `<div class="flex justify-between"><span class="text-slate-400">タグ:</span><span class="font-medium text-teal-700">${rec.tags.join(' ')}</span></div>` : ''}
-          <div class="flex justify-between pt-1 border-t border-slate-200"><span class="text-slate-400">合計金額:</span><span class="font-black text-rose-500 text-base">¥${rec.totalAmount.toLocaleString()}</span></div>
+          <div class="flex justify-between pt-1 border-t border-slate-200"><span class="text-slate-400">合計金額:</span><span class="font-black text-rose-500 text-base">¥${dispAmt.toLocaleString()}</span></div>
         </div>
         <div>
           <div class="font-bold text-slate-400 mb-1">内訳・品目</div>
@@ -1791,7 +1870,7 @@
       `;
 
       document.getElementById("detail-modal-delete-btn").onclick = () => {
-        confirmAction("明細の削除", `「${rec.store} (¥${rec.totalAmount.toLocaleString()})」を削除しますか？`, () => {
+        confirmAction("明細の削除", `「${rec.store} (¥${dispAmt.toLocaleString()})」を削除しますか？`, () => {
           records = records.filter(r => r.id !== rec.id);
           saveAllStorage();
           closeModal("detail-modal");
@@ -1853,8 +1932,9 @@
         if ((r.inclusionScope || "always") !== "always") return;
 
         (r.items || []).forEach(it => {
-          catTotals[it.categoryId] = (catTotals[it.categoryId] || 0) + it.price;
-          totalExp += it.price;
+          const p = safeParseInt(it.price);
+          catTotals[it.categoryId] = (catTotals[it.categoryId] || 0) + p;
+          totalExp += p;
         });
       });
       renderDoughnutChart(catTotals, totalExp);
@@ -1874,14 +1954,16 @@
         if (sc === "excluded") return;
 
         const mIdx = parseInt(r.date.slice(5, 7), 10) - 1;
+        const amt = safeParseInt(r.totalAmount);
         if (r.type === "expense") {
-          monthlyExp[mIdx] += r.totalAmount;
+          monthlyExp[mIdx] += amt;
           (r.items || []).forEach(it => {
-            catTotals[it.categoryId] = (catTotals[it.categoryId] || 0) + it.price;
-            totalExp += it.price;
+            const p = safeParseInt(it.price);
+            catTotals[it.categoryId] = (catTotals[it.categoryId] || 0) + p;
+            totalExp += p;
           });
         } else {
-          monthlyInc[mIdx] += r.totalAmount;
+          monthlyInc[mIdx] += amt;
         }
       });
 
@@ -1896,7 +1978,7 @@
       const activeCats = categories.expense.filter(c => (catTotals[c.id] || 0) > 0);
 
       if (catChartInstance) catChartInstance.destroy();
-      if (totalExp === 0 || activeCats.length === 0) {
+      if (totalExp <= 0 || activeCats.length === 0) {
         emptyEl.classList.remove("hidden");
         return;
       }
@@ -1987,8 +2069,9 @@
         if (!r.date || !r.date.startsWith(`${year}-`)) return;
         (r.items || []).forEach(it => {
           if (it.categoryId === "medical") {
-            currentYearMedicalItems.push({ date: r.date, store: r.store, name: it.name, price: it.price });
-            totalMed += it.price;
+            const p = safeParseInt(it.price);
+            currentYearMedicalItems.push({ date: r.date, store: r.store, name: it.name, price: p });
+            totalMed += p;
           }
         });
       });
@@ -2049,7 +2132,7 @@
     }
 
     function saveBudgetSettings() {
-      const b = parseInt(document.getElementById("setting-budget").value, 10);
+      const b = safeParseInt(document.getElementById("setting-budget").value);
       const cd = document.getElementById("setting-cutoff-day").value;
       const adj = document.getElementById("setting-holiday-adj").value;
       const tgt = document.getElementById("setting-holiday-target").value;
@@ -2103,8 +2186,8 @@
           }
 
           const rawMethod = methodIdx !== -1 ? (row[methodIdx] || "").trim() : "";
-          const expVal = expIdx !== -1 ? parseInt((row[expIdx] || "0").replace(/[^0-9-]/g, ""), 10) || 0 : 0;
-          const incVal = incIdx !== -1 ? parseInt((row[incIdx] || "0").replace(/[^0-9-]/g, ""), 10) || 0 : 0;
+          const expVal = expIdx !== -1 ? safeParseInt(row[expIdx]) : 0;
+          const incVal = incIdx !== -1 ? safeParseInt(row[incIdx]) : 0;
 
           let type = "expense";
           let amount = expVal;
@@ -2297,7 +2380,7 @@
       fixedExpenses.forEach(f => {
         const item = document.createElement("div");
         item.className = "flex items-center justify-between p-2 bg-slate-50 rounded-xl text-xs";
-        item.innerHTML = `<div><div class="font-bold text-slate-700">${escapeHtml(f.name)}</div><div class="text-[10px] text-slate-400">毎月${f.day}日 · ¥${f.amount.toLocaleString()}</div></div><button onclick="deleteFixedExpense('${f.id}')" class="text-slate-400 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button>`;
+        item.innerHTML = `<div><div class="font-bold text-slate-700">${escapeHtml(f.name)}</div><div class="text-[10px] text-slate-400">毎月${f.day}日 · ¥${safeParseInt(f.amount).toLocaleString()}</div></div><button onclick="deleteFixedExpense('${f.id}')" class="text-slate-400 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button>`;
         c.appendChild(item);
       });
     }
@@ -2306,10 +2389,10 @@
     }
     function saveFixedExpense() {
       const name = document.getElementById("fixed-name").value.trim();
-      const amount = parseInt(document.getElementById("fixed-amount").value, 10);
-      const day = parseInt(document.getElementById("fixed-day").value, 10) || 25;
+      const amount = safeParseInt(document.getElementById("fixed-amount").value);
+      const day = safeParseInt(document.getElementById("fixed-day").value) || 25;
       const catId = document.getElementById("fixed-category").value;
-      if (!name || !amount || amount <= 0) { showToast("項目名と金額を入力してください", true); return; }
+      if (!name || amount <= 0) { showToast("項目名と金額を入力してください", true); return; }
 
       fixedExpenses.push({ id: "fix_" + Date.now(), name, amount, day, categoryId: catId, paymentMethod: "bank", inclusionScope: "always", lastCycle: "" });
       saveAllStorage();
@@ -2399,11 +2482,11 @@
     }
     function toggleKeyVisibility() {
       const el = document.getElementById("setting-api-key");
-      el.type = (el.type === "password") ? "text" : "password";
+      el.classList.toggle("masked-key");
     }
 
     function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "2.5", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      const full = { app: "KakeiboPWA", version: "2.6", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
       downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
       showToast("完全バックアップJSONを出力しました");
     }
@@ -2433,7 +2516,7 @@
       let csv = "\uFEFFid,日付,種別,店名,電話番号,支払元,集計対象,タグ,品目名,品目カテゴリ,金額\n";
       records.forEach(r => {
         (r.items || []).forEach(it => {
-          csv += `"${r.id}","${r.date}","${r.type}","${(r.store||'').replace(/"/g, '""')}","${r.phone||''}","${r.paymentMethod}","${r.inclusionScope}","${(r.tags||[]).join(' ')}","${(it.name||'').replace(/"/g, '""')}","${it.categoryId}",${it.price}\n`;
+          csv += `"${r.id}","${r.date}","${r.type}","${(r.store||'').replace(/"/g, '""')}","${r.phone||''}","${r.paymentMethod}","${r.inclusionScope}","${(r.tags||[]).join(' ')}","${(it.name||'').replace(/"/g, '""')}","${it.categoryId}",${safeParseInt(it.price)}\n`;
         });
       });
       downloadFile(csv, `家計簿明細_${getTodayISO()}.csv`, "text/csv;charset=utf-8;");
