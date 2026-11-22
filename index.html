@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v3.3</title>
+  <title>家計簿 v3.5</title>
 
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
@@ -50,7 +50,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.3</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.5</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -477,7 +477,8 @@
               <span id="drilldown-cat-full-amount" class="text-base font-black text-slate-800">¥0</span>
             </div>
 
-            <div id="drilldown-subcat-list" class="divide-y divide-slate-100 space-y-1"></div>
+            <div class="text-[10px] text-teal-600 text-right font-bold">※金額のある中項目をタップすると明細一覧へ移動します</div>
+            <div id="drilldown-subcat-list" class="divide-y divide-slate-100"></div>
           </div>
         </div>
 
@@ -513,7 +514,6 @@
 
       <!-- 4. 設定 タブ -->
       <section id="tab-settings" class="p-4 space-y-4 hidden fade-in">
-        <!-- ★ スプレッドシート自動バックアップ ＆ 直接復元カード -->
         <div class="bg-gradient-to-br from-teal-800 to-slate-800 text-white p-4 rounded-2xl shadow-md space-y-3 border border-teal-600">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-sm font-black">
@@ -533,7 +533,6 @@
             <button type="button" onclick="testGasConnection()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-teal-200 text-xs font-bold rounded-xl transition">テスト送信</button>
           </div>
 
-          <!-- ★ 新設：シートからの直接復元エリア -->
           <div class="pt-3 border-t border-teal-600/50 space-y-2">
             <div class="text-xs font-bold text-emerald-300 flex items-center space-x-1.5">
               <i class="fa-solid fa-cloud-arrow-down"></i>
@@ -684,7 +683,12 @@
               <span>サンプルデータ追加</span>
             </button>
           </div>
-          <button onclick="confirmResetAll()" class="w-full py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-xl transition">全データを初期化</button>
+          <div class="pt-3 border-t border-rose-100">
+            <button onclick="confirmResetAll()" class="w-full py-2 bg-rose-50/70 text-rose-500 hover:bg-rose-100 text-[11px] font-bold rounded-xl border border-rose-200/60 transition flex items-center justify-center space-x-1">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>全データを初期化（要キーワード入力）</span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -809,8 +813,9 @@
             <i class="fa-solid fa-pen-to-square"></i>
             <span>すべての項目（金額・品目・中項目等）を修正する</span>
           </button>
-          <button id="detail-modal-delete-btn" class="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition">
-            この明細を削除
+          <button id="detail-modal-delete-btn" class="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>この明細を削除</span>
           </button>
         </div>
       </div>
@@ -931,8 +936,12 @@
         <div id="confirm-icon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
         <div id="confirm-title" class="font-bold text-slate-800 text-sm">確認</div>
         <p id="confirm-message" class="text-xs text-slate-500 leading-relaxed"></p>
+        <div id="confirm-keyword-box" class="hidden text-left bg-rose-50 p-2.5 rounded-xl border border-rose-200 space-y-1.5">
+          <label id="confirm-keyword-label" class="text-[10px] font-bold text-rose-700 block"></label>
+          <input type="text" id="confirm-keyword-input" autocomplete="off" class="w-full px-2.5 py-1.5 text-xs bg-white border border-rose-300 rounded-lg font-bold text-center focus:outline-none focus:border-rose-500">
+        </div>
         <div class="flex space-x-2 pt-2">
-          <button id="confirm-ok-btn" class="flex-1 py-2 bg-rose-600 text-white font-bold text-xs rounded-xl shadow">OK</button>
+          <button id="confirm-ok-btn" class="flex-1 py-2 bg-rose-600 disabled:bg-slate-300 text-white font-bold text-xs rounded-xl shadow transition">削除する</button>
           <button onclick="closeModal('confirm-modal')" class="flex-1 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl">キャンセル</button>
         </div>
       </div>
@@ -969,9 +978,12 @@
       <p id="ai-loading-desc" class="text-xs text-slate-300 text-center leading-relaxed"></p>
     </div>
 
-    <div id="toast" class="hidden absolute top-14 left-1/2 -translate-x-1/2 z-60 bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center space-x-2">
-      <i id="toast-icon" class="fa-solid fa-circle-check text-teal-400"></i>
-      <span id="toast-msg">保存しました</span>
+    <div id="toast" class="hidden absolute top-14 left-1/2 -translate-x-1/2 z-60 bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center space-x-2 max-w-[92vw]">
+      <i id="toast-icon" class="fa-solid fa-circle-check text-teal-400 shrink-0"></i>
+      <span id="toast-msg" class="truncate">保存しました</span>
+      <button type="button" id="toast-undo-btn" class="hidden bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shrink-0 ml-1 shadow-xs transition">
+        元に戻す
+      </button>
     </div>
 
   </div>
@@ -1178,9 +1190,12 @@
       return unique;
     }
 
-    function getTodayISO() {
-      const d = new Date();
+    function formatDateToISO(d) {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getTodayISO() {
+      return formatDateToISO(new Date());
     }
 
     function normalizeReceiptDate(rawStr, fixYearDrift = true) {
@@ -2196,9 +2211,6 @@
       showToast("スプレッドシートへテスト送信を行いました！シート側をご確認ください");
     }
 
-    // ==========================================
-    // ★ スプレッドシート（GAS doGet）からの直接データ復元機能
-    // ==========================================
     async function restoreFromGas() {
       const gasUrl = (document.getElementById("setting-gas-url").value || appConfig.gasBackupUrl || "").trim();
       if (!gasUrl || !gasUrl.startsWith("http")) {
@@ -2224,7 +2236,7 @@
         const json = await response.json();
 
         if (json.status !== "success" || !Array.isArray(json.rows)) {
-          throw new Error(json.message || "スプレッドシートのデータ形式が正しくありません（GAS側のdoGet再デプロイをご確認ください）");
+          throw new Error(json.message || "スプレッドシートのデータ形式が正しくありません");
         }
 
         const rows = json.rows;
@@ -2233,7 +2245,6 @@
           return;
         }
 
-        // 「登録日時 + 購入日 + 店舗名 + 支払元」をキーに1枚のレシート（スプリット明細）へ再統合
         const groupedMap = new Map();
         rows.forEach((r, idx) => {
           const normDate = normalizeReceiptDate(r.date, false);
@@ -2281,7 +2292,6 @@
         groupedMap.forEach((cand) => {
           if (cand.totalAmount <= 0) return;
 
-          // 既存データとの二重登録チェック
           const isAlreadyInApp = records.some(existing => {
             if (existing.gasSyncKey && existing.gasSyncKey === cand.gasSyncKey) return true;
             return existing.date === cand.date &&
@@ -2313,7 +2323,6 @@
 
         if (restoredCount > 0) {
           records = newlyRestored.concat(records);
-          // 日付降順にソート
           records.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
           saveAllStorage();
           updateTagFilterDropdown();
@@ -2334,9 +2343,6 @@
       }
     }
 
-    // ==========================================
-    // レシート解析（単一・複数一括）
-    // ==========================================
     async function analyzeSingleReceiptFile(file, apiKey) {
       const base64Data = await compressReceiptImage(file, 1024);
       const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
@@ -3075,10 +3081,15 @@
           const tagBadges = (rec.tags || []).map(t => `<span class="text-[9px] bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded-full font-bold border border-teal-200/60">${escapeHtml(t)}</span>`).join(" ");
 
           let matchedItemHighlight = "";
-          if (sItemKw && Array.isArray(rec.items)) {
-            const hit = rec.items.find(it => (it.name || "").toLowerCase().includes(sItemKw));
+          const matchTargetKw = sItemKw;
+          if ((matchTargetKw || sSubCat !== "all") && Array.isArray(rec.items)) {
+            const hit = rec.items.find(it => {
+              if (sSubCat !== "all" && it.subCategoryId === sSubCat) return true;
+              if (matchTargetKw && (it.name || "").toLowerCase().includes(matchTargetKw)) return true;
+              return false;
+            });
             if (hit) {
-              matchedItemHighlight = `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded mt-0.5 inline-block font-bold">ヒット品目: ${escapeHtml(hit.name)} (¥${safeParseInt(hit.price).toLocaleString()})</div>`;
+              matchedItemHighlight = `<div class="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded mt-0.5 inline-block font-bold">該当品目: ${escapeHtml(hit.name)} (¥${safeParseInt(hit.price).toLocaleString()})</div>`;
             }
           }
 
@@ -3193,17 +3204,37 @@
       `;
 
       document.getElementById("detail-modal-edit-btn").onclick = () => startEditRecord(rec.id);
+
       document.getElementById("detail-modal-delete-btn").onclick = () => {
-        confirmAction("明細の削除", `「${rec.store} (¥${dispAmt.toLocaleString()})」を削除しますか？`, () => {
-          records = records.filter(r => r.id !== rec.id);
-          if (editingRecordId === rec.id) cancelEditMode();
-          saveAllStorage();
-          updateTagFilterDropdown();
-          closeModal("detail-modal");
-          renderHistoryList();
-          renderDashboard();
-          showToast("明細を削除しました");
-        });
+        confirmAction(
+          "明細の削除確認",
+          `【${rec.date}】「${rec.store}」（¥${dispAmt.toLocaleString()}）を削除しますか？`,
+          () => {
+            const deletedIndex = records.findIndex(r => r.id === rec.id);
+            const backupCopy = JSON.parse(JSON.stringify(rec));
+
+            records = records.filter(r => r.id !== rec.id);
+            if (editingRecordId === rec.id) cancelEditMode();
+            saveAllStorage();
+            updateTagFilterDropdown();
+            closeModal("detail-modal");
+            renderHistoryList();
+            renderDashboard();
+
+            showToast(`「${backupCopy.store}」を削除しました`, false, () => {
+              if (deletedIndex !== -1 && deletedIndex <= records.length) {
+                records.splice(deletedIndex, 0, backupCopy);
+              } else {
+                records.unshift(backupCopy);
+              }
+              saveAllStorage();
+              updateTagFilterDropdown();
+              renderHistoryList();
+              renderDashboard();
+              showToast(`「${backupCopy.store}」を元に戻しました！`);
+            });
+          }
+        );
       };
     }
 
@@ -3384,6 +3415,47 @@
       if (drilldownChartInstance) drilldownChartInstance.destroy();
     }
 
+    // ★ 中項目タップで該当明細へ直接ジャンプする関数
+    function jumpToSubCategoryHistory(catId, subCatId) {
+      const cycle = getCycleRange(viewingDate, appConfig);
+      const isYear = analyticsSubTab === "year";
+      const year = viewingDate.getFullYear();
+
+      const dateFrom = isYear ? `${year}-01-01` : formatDateToISO(cycle.startDate);
+      const dateTo = isYear ? `${year}-12-31` : formatDateToISO(cycle.endDate);
+
+      switchTab("history");
+
+      // 検索条件をセット
+      document.getElementById("search-type").value = "expense";
+      document.getElementById("search-scope").value = "always";
+      document.getElementById("search-date-from").value = dateFrom;
+      document.getElementById("search-date-to").value = dateTo;
+      document.getElementById("search-item-keyword").value = "";
+      document.getElementById("search-store").value = "";
+      document.getElementById("hist-filter-tag").value = "all";
+      document.getElementById("search-amt-min").value = "";
+      document.getElementById("search-amt-max").value = "";
+      document.getElementById("hist-filter-payment").value = "all";
+
+      populateSearchCategoryDropdowns();
+      document.getElementById("search-cat-parent").value = catId;
+      onSearchParentCatChange();
+      document.getElementById("search-cat-sub").value = subCatId;
+
+      // 検索パネルを開いた状態にして絞り込み結果を表示
+      if (!isSearchPanelOpen) {
+        isSearchPanelOpen = true;
+        document.getElementById("history-search-panel").classList.remove("hidden");
+        document.getElementById("hist-search-toggle-btn").className = "px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-teal-700 text-white border border-teal-700 shrink-0 transition flex items-center space-x-1 mr-1";
+      }
+
+      renderHistoryList();
+      const parentObj = getCategoryObj(catId, "expense");
+      const subName = getSubCategoryName(catId, subCatId, "expense");
+      showToast(`「${parentObj.name} ＞ ${subName}」の明細を表示しました`);
+    }
+
     function renderDrilldownAnalytics() {
       if (!currentDrilldownCatId) return;
       const parent = getCategoryObj(currentDrilldownCatId, "expense");
@@ -3456,14 +3528,30 @@
         const val = subTotals[s.id] || 0;
         const dotColor = (val > 0) ? subPalette[idx % subPalette.length] : "#cbd5e1";
         const row = document.createElement("div");
-        row.className = "py-2.5 flex justify-between items-center text-xs";
-        row.innerHTML = `
-          <div class="flex items-center space-x-2">
-            <span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" style="background-color: ${dotColor};"></span>
-            <span class="font-bold text-slate-700">${escapeHtml(s.name)}</span>
-          </div>
-          <span class="font-black ${val > 0 ? 'text-slate-800' : 'text-slate-300'}">¥${val.toLocaleString()}</span>
-        `;
+
+        if (val > 0) {
+          row.className = "py-2.5 px-2 flex justify-between items-center text-xs hover:bg-teal-50/70 active:bg-teal-100/70 rounded-lg cursor-pointer transition";
+          row.onclick = () => jumpToSubCategoryHistory(currentDrilldownCatId, s.id);
+          row.innerHTML = `
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" style="background-color: ${dotColor};"></span>
+              <span class="font-bold text-slate-700">${escapeHtml(s.name)}</span>
+            </div>
+            <div class="flex items-center space-x-1.5">
+              <span class="font-black text-slate-800">¥${val.toLocaleString()}</span>
+              <i class="fa-solid fa-chevron-right text-[10px] text-teal-600"></i>
+            </div>
+          `;
+        } else {
+          row.className = "py-2.5 px-2 flex justify-between items-center text-xs";
+          row.innerHTML = `
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" style="background-color: ${dotColor};"></span>
+              <span class="font-bold text-slate-400">${escapeHtml(s.name)}</span>
+            </div>
+            <span class="font-black text-slate-300">¥0</span>
+          `;
+        }
         listContainer.appendChild(row);
       });
     }
@@ -3656,11 +3744,19 @@
 
     function deleteCategory(id) {
       if (categories[catManageType].length <= 1) { showToast("最低1つの大項目が必要です", true); return; }
-      categories[catManageType] = categories[catManageType].filter(c => c.id !== id);
-      saveAllStorage();
-      renderCategoryManageList();
-      renderSimpleCategoryGrid();
-      populateSearchCategoryDropdowns();
+      const targetCat = categories[catManageType].find(c => c.id === id);
+      confirmAction(
+        "大項目の削除",
+        `大項目「${targetCat ? targetCat.name : ''}」とその中項目を削除しますか？`,
+        () => {
+          categories[catManageType] = categories[catManageType].filter(c => c.id !== id);
+          saveAllStorage();
+          renderCategoryManageList();
+          renderSimpleCategoryGrid();
+          populateSearchCategoryDropdowns();
+          showToast("大項目を削除しました");
+        }
+      );
     }
 
     function openSubCategoryEditModal(parentId, subId, currentName) {
@@ -3707,12 +3803,19 @@
         showToast("中項目は最低1つ必要です", true);
         return;
       }
-      parent.subCategories = parent.subCategories.filter(s => s.id !== subId);
-      saveAllStorage();
-      renderCategoryManageList();
-      renderSimpleCategoryGrid();
-      populateSearchCategoryDropdowns();
-      showToast("中項目を削除しました");
+      const targetSub = parent.subCategories.find(s => s.id === subId);
+      confirmAction(
+        "中項目の削除",
+        `中項目「${targetSub ? targetSub.name : ''}」を削除しますか？`,
+        () => {
+          parent.subCategories = parent.subCategories.filter(s => s.id !== subId);
+          saveAllStorage();
+          renderCategoryManageList();
+          renderSimpleCategoryGrid();
+          populateSearchCategoryDropdowns();
+          showToast("中項目を削除しました");
+        }
+      );
     }
 
     function saveApiKey() {
@@ -3728,7 +3831,7 @@
     }
 
     function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "3.3", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      const full = { app: "KakeiboPWA", version: "3.5", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
       downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
       showToast("完全バックアップJSONを出力しました");
     }
@@ -3797,29 +3900,59 @@
     }
 
     function confirmResetAll() {
-      confirmAction("全データのリセット", "家計簿の全記録、写真、設定を初期化します。よろしいですか？", () => {
-        records = [];
-        categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-        paymentMethods = JSON.parse(JSON.stringify(DEFAULT_PAYMENT_METHODS));
-        fixedExpenses = [];
-        cancelEditMode();
-        saveAllStorage();
-        loadStorageData();
-        updateTagFilterDropdown();
-        populateSearchCategoryDropdowns();
-        renderDashboard();
-        showToast("すべて初期化しました");
-      });
+      confirmAction(
+        "全データの完全初期化",
+        `現在保存されている ${records.length} 件の明細、レシート写真、カテゴリ・支払い元設定がすべて消去されます（元に戻せません）。`,
+        () => {
+          records = [];
+          categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+          paymentMethods = JSON.parse(JSON.stringify(DEFAULT_PAYMENT_METHODS));
+          fixedExpenses = [];
+          cancelEditMode();
+          saveAllStorage();
+          loadStorageData();
+          updateTagFilterDropdown();
+          populateSearchCategoryDropdowns();
+          renderDashboard();
+          showToast("全データを初期化しました");
+        },
+        "初期化"
+      );
     }
 
     function openModal(id) { document.getElementById(id).classList.remove("hidden"); }
     function closeModal(id) { document.getElementById(id).classList.add("hidden"); }
 
-    function confirmAction(title, msg, onOk) {
+    function confirmAction(title, msg, onOk, requireKeyword = "") {
       document.getElementById("confirm-title").textContent = title;
       document.getElementById("confirm-message").textContent = msg;
       const okBtn = document.getElementById("confirm-ok-btn");
-      okBtn.onclick = () => { closeModal("confirm-modal"); if (onOk) onOk(); };
+      const kwBox = document.getElementById("confirm-keyword-box");
+      const kwLabel = document.getElementById("confirm-keyword-label");
+      const kwInput = document.getElementById("confirm-keyword-input");
+
+      if (requireKeyword) {
+        kwBox.classList.remove("hidden");
+        kwLabel.textContent = `誤操作防止のため「${requireKeyword}」と入力してください：`;
+        kwInput.value = "";
+        kwInput.placeholder = requireKeyword;
+        okBtn.disabled = true;
+        okBtn.textContent = "実行する";
+        kwInput.oninput = () => {
+          okBtn.disabled = (kwInput.value.trim() !== requireKeyword);
+        };
+      } else {
+        kwBox.classList.add("hidden");
+        kwInput.oninput = null;
+        okBtn.disabled = false;
+        okBtn.textContent = "削除する";
+      }
+
+      okBtn.onclick = () => {
+        if (requireKeyword && kwInput.value.trim() !== requireKeyword) return;
+        closeModal("confirm-modal");
+        if (onOk) onOk();
+      };
       openModal("confirm-modal");
     }
 
@@ -3845,15 +3978,31 @@
     }
 
     let toastTimer = null;
-    function showToast(msg, isError = false) {
+    function showToast(msg, isError = false, onUndo = null) {
       const toast = document.getElementById("toast");
       const icon = document.getElementById("toast-icon");
       const txt = document.getElementById("toast-msg");
+      const undoBtn = document.getElementById("toast-undo-btn");
+
       txt.textContent = msg;
-      icon.className = isError ? "fa-solid fa-circle-exclamation text-rose-400" : "fa-solid fa-circle-check text-teal-400";
+      icon.className = isError ? "fa-solid fa-circle-exclamation text-rose-400 shrink-0" : "fa-solid fa-circle-check text-teal-400 shrink-0";
+
+      if (typeof onUndo === "function") {
+        undoBtn.classList.remove("hidden");
+        undoBtn.onclick = () => {
+          if (toastTimer) clearTimeout(toastTimer);
+          toast.classList.add("hidden");
+          onUndo();
+        };
+      } else {
+        undoBtn.classList.add("hidden");
+        undoBtn.onclick = null;
+      }
+
       toast.classList.remove("hidden");
       if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => { toast.classList.add("hidden"); }, 2800);
+      const duration = typeof onUndo === "function" ? 5000 : 2800;
+      toastTimer = setTimeout(() => { toast.classList.add("hidden"); }, duration);
     }
 
     function downloadFile(content, fileName, mimeType) {
@@ -4073,7 +4222,7 @@
       paymentMethods.forEach(p => {
         const item = document.createElement("div");
         item.className = "flex items-center justify-between p-2 bg-slate-50 rounded-xl text-xs";
-        item.innerHTML = `<span class="font-bold text-slate-700">${escapeHtml(p.name)}</span><button onclick="deletePaymentMethod('${p.id}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button>`;
+        item.innerHTML = `<span class="font-bold text-slate-700">${escapeHtml(p.name)}</span><button onclick="deletePaymentMethod('${p.id}')" class="text-slate-400 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button>`;
         list.appendChild(item);
       });
     }
@@ -4088,14 +4237,24 @@
       renderPaymentMethodBadges();
       showToast("支払い元を追加しました");
     }
+
     function deletePaymentMethod(id) {
       if (paymentMethods.length <= 1) { showToast("最低1つの支払い元が必要です", true); return; }
-      paymentMethods = paymentMethods.filter(p => p.id !== id);
-      saveAllStorage();
-      renderPaymentManageList();
-      renderPaymentMethodDropdowns();
-      renderPaymentMethodBadges();
+      const targetPm = paymentMethods.find(p => p.id === id);
+      confirmAction(
+        "支払い元の削除",
+        `支払い元「${targetPm ? targetPm.name : ''}」を削除しますか？`,
+        () => {
+          paymentMethods = paymentMethods.filter(p => p.id !== id);
+          saveAllStorage();
+          renderPaymentManageList();
+          renderPaymentMethodDropdowns();
+          renderPaymentMethodBadges();
+          showToast("支払い元を削除しました");
+        }
+      );
     }
+
     function getPaymentName(id) {
       const p = paymentMethods.find(x => x.id === id);
       return p ? p.name : "現金";
@@ -4131,11 +4290,47 @@
       renderFixedExpensesList();
       showToast("固定費を登録しました！");
     }
+
     function deleteFixedExpense(id) {
-      fixedExpenses = fixedExpenses.filter(f => f.id !== id);
-      saveAllStorage();
+      const targetFix = fixedExpenses.find(f => f.id === id);
+      confirmAction(
+        "固定費の削除",
+        `固定費「${targetFix ? targetFix.name : ''}」を削除しますか？`,
+        () => {
+          fixedExpenses = fixedExpenses.filter(f => f.id !== id);
+          saveAllStorage();
+          renderFixedExpensesList();
+          showToast("固定費を削除しました");
+        }
+      );
+    }
+
+    function renderSettingsTab() {
+      document.getElementById("setting-budget").value = appConfig.budget || 100000;
+      document.getElementById("setting-cutoff-day").value = String(appConfig.cutoffDay);
+      document.getElementById("setting-holiday-adj").value = appConfig.holidayAdjustment || "prev";
+      document.getElementById("setting-holiday-target").value = appConfig.holidayTarget || "weekend_holiday";
+      document.getElementById("setting-api-key").value = appConfig.geminiApiKey || "";
+      document.getElementById("setting-gas-url").value = appConfig.gasBackupUrl || "";
+      updateSettingsCyclePreview();
       renderFixedExpensesList();
-      showToast("固定費を削除しました");
+      renderPaymentMethodBadges();
+      populateFixedModalCategories();
+    }
+
+    function saveBudgetSettings() {
+      const b = safeParseInt(document.getElementById("setting-budget").value);
+      const cd = document.getElementById("setting-cutoff-day").value;
+      const adj = document.getElementById("setting-holiday-adj").value;
+      const tgt = document.getElementById("setting-holiday-target").value;
+      if (b > 0) appConfig.budget = b;
+      appConfig.cutoffDay = cd;
+      appConfig.holidayAdjustment = adj;
+      appConfig.holidayTarget = tgt;
+      saveAllStorage();
+      renderDashboard();
+      updateSettingsCyclePreview();
+      showToast("予算・締め日設定を保存しました！");
     }
   </script>
 </body>
