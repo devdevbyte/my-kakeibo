@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v3.1</title>
+  <title>家計簿 v3.2</title>
 
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
@@ -50,7 +50,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.1</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.2</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -121,27 +121,39 @@
           <button id="type-income-btn" onclick="setInputType('income')" class="py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition">収入</button>
         </div>
 
-        <!-- ★ レシート撮影・複数枚一括読取バナー -->
-        <div id="receipt-scan-banner" class="bg-gradient-to-r from-teal-700 to-emerald-600 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between">
-          <div class="flex items-center space-x-2.5">
+        <!-- ★ AIレシート読取バナー（「カメラ撮影」と「複数画像選択」を分離） -->
+        <div id="receipt-scan-banner" class="bg-gradient-to-r from-teal-700 to-emerald-600 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between gap-2">
+          <div class="flex items-center space-x-2.5 min-w-0">
             <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0">
-              <i class="fa-solid fa-layer-group"></i>
+              <i class="fa-solid fa-receipt"></i>
             </div>
-            <div>
-              <div class="text-xs font-bold">AIレシート読取 (1枚・複数一括)</div>
-              <div class="text-[10px] text-teal-100">複数選択で一括保存＆重複自動チェック</div>
+            <div class="truncate">
+              <div class="text-xs font-bold truncate">AIレシート読取</div>
+              <div class="text-[10px] text-teal-100 truncate">カメラ撮影 / 複数一括選択</div>
             </div>
           </div>
-          <input type="file" id="receipt-input" accept="image/*" multiple class="hidden" onchange="handleReceiptUpload(event)">
-          <button onclick="document.getElementById('receipt-input').click()" class="bg-white text-teal-800 font-bold text-xs px-3.5 py-2 rounded-xl shadow active:scale-95 transition shrink-0">
-            撮影・選択
-          </button>
+
+          <!-- カメラ直接起動用input -->
+          <input type="file" id="receipt-camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
+          <!-- アルバム・複数選択用input -->
+          <input type="file" id="receipt-gallery-input" accept="image/*" multiple class="hidden" onchange="handleReceiptUpload(event)">
+
+          <div class="flex items-center space-x-1.5 shrink-0">
+            <button type="button" onclick="document.getElementById('receipt-camera-input').click()" class="bg-white text-teal-800 font-bold text-xs px-3 py-2 rounded-xl shadow active:scale-95 transition flex items-center space-x-1">
+              <i class="fa-solid fa-camera"></i>
+              <span>撮影</span>
+            </button>
+            <button type="button" onclick="document.getElementById('receipt-gallery-input').click()" class="bg-teal-900/40 hover:bg-teal-900/60 text-white border border-white/30 font-bold text-xs px-2.5 py-2 rounded-xl active:scale-95 transition flex items-center space-x-1">
+              <i class="fa-solid fa-images"></i>
+              <span>選択</span>
+            </button>
+          </div>
         </div>
 
         <!-- 入力フォーム本体 -->
         <div id="form-card-container" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
           
-          <!-- ★ 連続入力ロックバー -->
+          <!-- 連続入力ロックバー -->
           <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200/80">
             <div class="flex items-center space-x-2">
               <i id="lock-icon" class="fa-solid fa-lock-open text-slate-400 text-xs"></i>
@@ -285,7 +297,6 @@
 
       <!-- 2. 履歴・詳細検索 タブ -->
       <section id="tab-history" class="p-4 space-y-3 hidden fade-in">
-        <!-- 期間ナビゲーション ＆ 検索トグル -->
         <div class="flex items-center justify-between bg-white px-3 py-2.5 rounded-2xl shadow-sm border border-slate-100">
           <button id="hist-prev-btn" onclick="changePeriod(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200"><i class="fa-solid fa-chevron-left text-xs"></i></button>
           <div class="text-center flex-1 px-1">
@@ -302,7 +313,7 @@
           </button>
         </div>
 
-        <!-- ★ 全7条件対応 詳細検索パネル -->
+        <!-- 詳細検索パネル -->
         <div id="history-search-panel" class="hidden bg-white p-3.5 rounded-2xl shadow-md border border-teal-200 space-y-3 text-xs">
           <div class="flex items-center justify-between border-b border-slate-100 pb-2">
             <div class="font-bold text-teal-800 flex items-center space-x-1.5">
@@ -314,7 +325,6 @@
             </button>
           </div>
 
-          <!-- 1. 収入か支出か & 2. 集計対象 -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">収支種別</label>
@@ -335,7 +345,6 @@
             </div>
           </div>
 
-          <!-- 3. 期間（開始日 〜 終了日） -->
           <div>
             <label class="text-[10px] font-bold text-slate-400 block mb-1">期間指定（空欄時は全期間から検索）</label>
             <div class="flex items-center space-x-1.5">
@@ -345,7 +354,6 @@
             </div>
           </div>
 
-          <!-- 4. 項目（大項目・中項目・小項目［品目名］） -->
           <div class="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70">
             <label class="text-[10px] font-bold text-slate-500 block">項目で絞り込み（大・中・小すべて）</label>
             <div class="grid grid-cols-2 gap-1.5">
@@ -359,7 +367,6 @@
             <input type="text" id="search-item-keyword" oninput="renderHistoryList()" autocomplete="off" placeholder="小項目（品目名・メモ）を入力例: 牛乳, 風邪薬..." class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs">
           </div>
 
-          <!-- 5. 店名 & 6. タグ -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">店名</label>
@@ -373,7 +380,6 @@
             </div>
           </div>
 
-          <!-- 7. 金額範囲 & 支払い元 -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] font-bold text-slate-400 block mb-1">金額範囲 (円)</label>
@@ -392,7 +398,6 @@
           </div>
         </div>
 
-        <!-- 集計サマリーカード -->
         <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 space-y-2">
           <div class="grid grid-cols-3 gap-1 text-center">
             <div>
@@ -692,7 +697,6 @@
     </nav>
 
     <!-- モーダル群 -->
-    <!-- A1. 単一レシート確認モーダル（重複警告付き） -->
     <div id="receipt-scan-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[88vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -705,7 +709,6 @@
           </button>
         </div>
 
-        <!-- ★ 重複警告アラートバー -->
         <div id="scan-dup-alert" class="hidden bg-rose-50 border border-rose-300 text-rose-800 p-2.5 rounded-xl text-xs space-y-1">
           <div class="font-black flex items-center space-x-1 text-rose-600">
             <i class="fa-solid fa-triangle-exclamation"></i>
@@ -742,7 +745,7 @@
       </div>
     </div>
 
-    <!-- ★ A2. 複数枚まとめて一括スキャン＆一括保存モーダル -->
+    <!-- 複数枚まとめて一括スキャン＆一括保存モーダル -->
     <div id="batch-scan-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[90vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -755,7 +758,6 @@
           </button>
         </div>
 
-        <!-- 進捗バー -->
         <div id="batch-progress-box" class="bg-teal-50 p-3 rounded-xl border border-teal-200 space-y-1.5">
           <div class="flex justify-between text-xs font-bold text-teal-800">
             <span id="batch-progress-status">解析中...</span>
@@ -766,16 +768,13 @@
           </div>
         </div>
 
-        <!-- 一括設定の引き継ぎ表示 -->
         <div class="text-[10px] text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center justify-between">
           <span>保存時の設定: <strong id="batch-apply-settings-label" class="text-slate-700"></strong></span>
           <span class="text-rose-500 font-bold">重複は自動チェック解除済</span>
         </div>
 
-        <!-- 解析済みレシートリスト -->
         <div id="batch-results-list" class="overflow-y-auto flex-1 pr-1 space-y-2 text-xs"></div>
 
-        <!-- 一括保存ボタン -->
         <div class="pt-2 border-t border-slate-100">
           <button type="button" id="batch-save-all-btn" onclick="saveBatchSelectedRecords()" disabled class="w-full py-3.5 bg-teal-700 disabled:bg-slate-300 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-check-double"></i>
@@ -785,7 +784,7 @@
       </div>
     </div>
 
-    <!-- B. 明細詳細・クイックタグ付け＆フル編集モーダル -->
+    <!-- 明細詳細・クイックタグ付け＆フル編集モーダル -->
     <div id="detail-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[88vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -805,7 +804,7 @@
       </div>
     </div>
 
-    <!-- C. カテゴリ管理モーダル -->
+    <!-- カテゴリ管理モーダル -->
     <div id="category-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[88vh]">
         <div class="flex items-center justify-between border-b pb-2">
@@ -826,7 +825,7 @@
       </div>
     </div>
 
-    <!-- D. 大項目編集モーダル -->
+    <!-- 大項目編集モーダル -->
     <div id="category-edit-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -853,7 +852,7 @@
       </div>
     </div>
 
-    <!-- E. 中項目編集モーダル -->
+    <!-- 中項目編集モーダル -->
     <div id="subcat-edit-modal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-xs z-60 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -873,7 +872,7 @@
       </div>
     </div>
 
-    <!-- F. 支払い元管理モーダル -->
+    <!-- 支払い元管理モーダル -->
     <div id="payment-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
         <div class="flex items-center justify-between border-b pb-2">
@@ -888,7 +887,7 @@
       </div>
     </div>
 
-    <!-- G. 固定費追加モーダル -->
+    <!-- 固定費追加モーダル -->
     <div id="fixed-expense-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -920,7 +919,7 @@
       </div>
     </div>
 
-    <!-- H. 汎用確認ダイアログ -->
+    <!-- 汎用確認ダイアログ -->
     <div id="confirm-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-60 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl space-y-3 text-center">
         <div id="confirm-icon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
@@ -933,7 +932,7 @@
       </div>
     </div>
 
-    <!-- I. 集計対象フラグの説明モーダル -->
+    <!-- 集計対象フラグの説明モーダル -->
     <div id="inclusion-help-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -1126,10 +1125,10 @@
     let selectedSimpleSubCategoryId = "food_grocery";
     let attachedImageBase64 = null;
     let pendingScanResult = null;
-    let batchScanQueue = []; // ★ 複数枚一括スキャン用キュー
+    let batchScanQueue = [];
     let isHistoryAllMode = false;
     let isSearchPanelOpen = false;
-    let isBatchLocked = false; // ★ 連続入力ロックフラグ
+    let isBatchLocked = false;
     let editingRecordId = null;
 
     let currentDrilldownCatId = null;
@@ -1240,7 +1239,6 @@
       return sub ? sub.name : (parent.subCategories[0]?.name || "その他");
     }
 
-    // ★ 重複検知ロジック（既存明細との自動照合）
     function findDuplicateRecord(scanData) {
       const targetAmt = safeParseInt(scanData.total_amount);
       if (targetAmt <= 0) return null;
@@ -1253,11 +1251,9 @@
         const dayDiff = Math.abs(targetDate.getTime() - rDate.getTime()) / (1000 * 60 * 60 * 24);
         const rStore = (r.store || "").toLowerCase().trim();
 
-        // 条件1: 前後1日以内で支払合計金額が完全一致
         if (dayDiff <= 1.2 && rAmt === targetAmt) {
           return r;
         }
-        // 条件2: 同日で店名が部分一致し、金額差が10円以内
         if (dayDiff < 0.5 && Math.abs(rAmt - targetAmt) <= 10 && targetStore && rStore && (targetStore.includes(rStore) || rStore.includes(targetStore))) {
           return r;
         }
@@ -1393,7 +1389,6 @@
       setSplitMode(false);
     }
 
-    // 連続入力ロック切替
     function toggleBatchLock() {
       isBatchLocked = !isBatchLocked;
       const btn = document.getElementById("batch-lock-btn");
@@ -2015,7 +2010,6 @@
       document.getElementById("form-memo").value = "";
       document.getElementById("form-date").value = getTodayISO();
 
-      // ★ 連続入力ロックがOFFのときだけ支払い元・タグ・集計対象をリセット
       if (!isBatchLocked) {
         document.getElementById("form-tags").value = "";
         setInclusionScope("always");
@@ -2199,15 +2193,11 @@
       showToast("スプレッドシートへテスト送信を行いました！シート側をご確認ください");
     }
 
-    // ==========================================
-    // ★ 1枚＆複数枚まとめて一括レシート解析処理
-    // ==========================================
     async function analyzeSingleReceiptFile(file, apiKey) {
       const t0 = performance.now();
       const base64Data = await compressReceiptImage(file, 1024);
       const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
       const t1 = performance.now();
-      const compressSec = ((t1 - t0) / 1000).toFixed(1);
 
       const curYear = new Date().getFullYear();
       const catCatalog = (categories.expense || []).map(c => {
@@ -2314,7 +2304,6 @@
         return;
       }
 
-      // 1枚選択の場合：従来の確認モーダル（重複アラート付き）
       if (files.length === 1) {
         setAiLoading(true, "AIレシート解析中...", "画像最適化・文字認識・重複照合を行っています");
         try {
@@ -2340,7 +2329,6 @@
         return;
       }
 
-      // ★ 複数枚選択の場合：一括スキャン＆一括保存モーダル起動
       batchScanQueue = [];
       const totalFiles = files.length;
       const curPayName = getPaymentName(document.getElementById("form-payment-method").value);
@@ -2359,7 +2347,6 @@
         document.getElementById("batch-progress-status").textContent = `${idx + 1}枚目を読み取り中...`;
         try {
           const itemData = await analyzeSingleReceiptFile(files[idx], apiKey);
-          // 重複があるものはデフォルトでチェックをfalseにする（二重登録防止）
           itemData.checked = !itemData.duplicateMatch;
           batchScanQueue.push(itemData);
         } catch (err) {
@@ -2460,7 +2447,6 @@
       applyScannedReceiptToForm();
     }
 
-    // ★ チェックした複数レシートを一気に保存＆GAS送信
     async function saveBatchSelectedRecords() {
       const targets = batchScanQueue.filter(it => !it.error && it.checked);
       if (targets.length === 0) return;
@@ -2500,7 +2486,6 @@
         totalSavedSum += newRec.totalAmount;
         savedCount++;
 
-        // GASバックアップへ少し間隔を空けて送信
         setTimeout(() => sendRecordToGas(newRec), i * 350);
       }
 
@@ -2664,9 +2649,6 @@
       document.getElementById("attached-image-preview-box").classList.add("hidden");
     }
 
-    // ==========================================
-    // ★ 詳細検索機能 ＆ 履歴一覧描画
-    // ==========================================
     function toggleSearchPanel() {
       isSearchPanelOpen = !isSearchPanelOpen;
       const panel = document.getElementById("history-search-panel");
@@ -2830,7 +2812,6 @@
         if (!r.date) return false;
         const normD = normalizeReceiptDate(r.date, false);
 
-        // 1. 期間判定
         if (sFrom || sTo) {
           if (sFrom && normD < sFrom) return false;
           if (sTo && normD > sTo) return false;
@@ -2839,28 +2820,21 @@
           if (rDate < cycle.startDate || rDate > cycle.endDate) return false;
         }
 
-        // 2. 収支種別
         if (sType !== "all" && r.type !== sType) return false;
 
-        // 3. 集計対象
         const sc = r.inclusionScope || "always";
         if (sScope !== "all" && sc !== sScope) return false;
 
-        // 4. 支払い元
         if (pFilter !== "all" && r.paymentMethod !== pFilter) return false;
 
-        // 5. タグ
         if (tFilter !== "all" && !(r.tags || []).includes(tFilter)) return false;
 
-        // 6. 店名
         if (sStoreKw && !(r.store || "").toLowerCase().includes(sStoreKw)) return false;
 
-        // 7. 金額範囲
         const amt = safeParseInt(r.totalAmount);
         if (minAmt !== null && amt < minAmt) return false;
         if (maxAmt !== null && amt > maxAmt) return false;
 
-        // 8. 項目（大・中・小）
         if (sParentCat !== "all" || sSubCat !== "all" || sItemKw) {
           const items = r.items || [];
           const hasMatchingItem = items.some(it => {
@@ -2958,7 +2932,6 @@
           const dispAmt = safeParseInt(rec.totalAmount);
           const tagBadges = (rec.tags || []).map(t => `<span class="text-[9px] bg-teal-50 text-teal-700 px-1.5 py-0.5 rounded-full font-bold border border-teal-200/60">${escapeHtml(t)}</span>`).join(" ");
 
-          // 小項目検索ワードがヒットした場合、該当品目をプレビュー表示
           let matchedItemHighlight = "";
           if (sItemKw && Array.isArray(rec.items)) {
             const hit = rec.items.find(it => (it.name || "").toLowerCase().includes(sItemKw));
@@ -3092,9 +3065,6 @@
       };
     }
 
-    // ==========================================
-    // 分析タブ
-    // ==========================================
     function setAnalyticsSubTab(tab) {
       analyticsSubTab = tab;
       ["month", "year", "medical"].forEach(b => {
@@ -3439,9 +3409,6 @@
       showToast("医療費控除用CSVを出力しました");
     }
 
-    // ==========================================
-    // 大項目 ＆ 中項目マスターの編集・追加機能
-    // ==========================================
     function openCategoryManageModal() {
       renderCategoryManageList();
       openModal("category-manage-modal");
@@ -3619,7 +3586,7 @@
     }
 
     function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "3.1", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      const full = { app: "KakeiboPWA", version: "3.2", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
       downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
       showToast("完全バックアップJSONを出力しました");
     }
