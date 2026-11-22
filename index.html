@@ -2342,7 +2342,7 @@
       }
     }
 
-   // ★ 1枚の画像から1枚〜複数枚のレシートを配列で抽出する
+// ★ 1枚の画像から1枚〜複数枚のレシートを配列で抽出する
     async function analyzeReceiptFileMulti(file, apiKey) {
       // 2枚並びでも文字が潰れないよう短辺1280pxで最適化
       const base64Data = await compressReceiptImage(file, 1280);
@@ -2547,79 +2547,6 @@
       }
 
       document.getElementById("batch-progress-status").textContent = `解析完了（合計 ${batchScanQueue.filter(x => !x.error).length}件のレシートを検出）`;
-      updateBatchSaveButtonState();
-      event.target.value = "";
-    } {
-      const files = Array.from(event.target.files || []);
-      if (files.length === 0) return;
-
-      const rawKey = appConfig.geminiApiKey || localStorage.getItem('gemini_api_key') || "";
-      const apiKey = rawKey.trim();
-      if (!apiKey) {
-        showToast("設定タブでGemini APIキーを登録してください", true);
-        switchTab("settings");
-        event.target.value = "";
-        return;
-      }
-
-      if (files.length === 1) {
-        setAiLoading(true, "AIレシート解析中...", "画像最適化・文字認識・重複照合を行っています");
-        try {
-          const resData = await analyzeSingleReceiptFile(files[0], apiKey);
-          attachedImageBase64 = resData.base64Url;
-          document.getElementById("attached-image-thumb").src = attachedImageBase64;
-          document.getElementById("attached-image-preview-box").classList.remove("hidden");
-
-          pendingScanResult = resData;
-          showScannedReceiptModal(resData, resData.diagText);
-        } catch (err) {
-          console.error(err);
-          if (err.message === "RATE_LIMIT") {
-            showToast("無料枠の上限に達しました。少し待って再試行してください", true);
-          } else {
-            alert(`解析失敗:\n${err.message}`);
-            showToast("解析失敗: 写真を再度確認してください", true);
-          }
-        } finally {
-          setAiLoading(false);
-          event.target.value = "";
-        }
-        return;
-      }
-
-      batchScanQueue = [];
-      const totalFiles = files.length;
-      const curPayName = getPaymentName(document.getElementById("form-payment-method").value);
-      const curTags = parseTagsInput(document.getElementById("form-tags").value).join(" ") || "タグなし";
-      document.getElementById("batch-apply-settings-label").textContent = `${curPayName} / ${curTags}`;
-
-      document.getElementById("batch-results-list").innerHTML = "";
-      document.getElementById("batch-save-all-btn").disabled = true;
-      document.getElementById("batch-save-btn-label").textContent = "解析完了をお待ちください...";
-      document.getElementById("batch-progress-status").textContent = "連続AI解析を実行中...";
-      document.getElementById("batch-progress-count").textContent = `0 / ${totalFiles}枚`;
-      document.getElementById("batch-progress-bar").style.width = "0%";
-      openModal("batch-scan-modal");
-
-      for (let idx = 0; idx < totalFiles; idx++) {
-        document.getElementById("batch-progress-status").textContent = `${idx + 1}枚目を読み取り中...`;
-        try {
-          const itemData = await analyzeSingleReceiptFile(files[idx], apiKey);
-          itemData.checked = !itemData.duplicateMatch;
-          batchScanQueue.push(itemData);
-        } catch (err) {
-          batchScanQueue.push({
-            error: err.message === "RATE_LIMIT" ? "API回数制限に達しました" : `読み取り失敗 (${err.message})`,
-            checked: false
-          });
-        }
-        const pct = Math.round(((idx + 1) / totalFiles) * 100);
-        document.getElementById("batch-progress-count").textContent = `${idx + 1} / ${totalFiles}枚`;
-        document.getElementById("batch-progress-bar").style.width = `${pct}%`;
-        renderBatchResultsList();
-      }
-
-      document.getElementById("batch-progress-status").textContent = "すべての解析が完了しました！";
       updateBatchSaveButtonState();
       event.target.value = "";
     }
