@@ -2342,8 +2342,10 @@
       }
     }
 
-    async function analyzeSingleReceiptFile(file, apiKey) {
-      const base64Data = await compressReceiptImage(file, 1024);
+   // ★ 1枚の画像から1枚〜複数枚のレシートを配列で抽出する
+    async function analyzeReceiptFileMulti(file, apiKey) {
+      // 2枚並びでも文字が潰れないよう短辺1280pxで最適化
+      const base64Data = await compressReceiptImage(file, 1280);
       const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
 
       const curYear = new Date().getFullYear();
@@ -2353,12 +2355,13 @@
       }).join("; ");
 
       const promptText = `
-レシート画像から文字を正確に読み取り、以下の短縮JSONのみを出力してください。
+画像内に写っている【すべてのレシート】を1枚ずつ漏れなく読み取り、以下のJSON形式のみで出力してください。
+- 画像内にレシートが2枚以上並んでいる場合は、左から右（または上から下）の順にすべて "receipts" 配列に入れてください。1枚だけの場合も要素1つの配列にしてください。
 - 現在は西暦${curYear}年です。日付の年が省略または2桁表記の場合は${curYear}年として "YYYY-MM-DD" で出力してください。
-- "t" にはレシート記載の最終支払合計金額（税込）を入れてください。
-- "i" には全品目を配列で入れてください。各品目: ["品名", 金額, "大項目ID", "中項目名"]
+- "t" には各レシート記載の最終支払合計金額（税込）を入れてください。
+- "i" にはそのレシートの全品目を配列で入れてください。各品目: ["品名", 金額, "大項目ID", "中項目名"]
 
-{"s":"店名","p":"電話番号","d":"${getTodayISO()}","t":0,"i":[["品名",0,"food","食料品"]]}
+{"receipts":[{"s":"店名","p":"電話番号","d":"${getTodayISO()}","t":0,"i":[["品名",0,"food","食料品"]]}]}
 
 利用可能カテゴリマスター: [${catCatalog}]
 日付不明時は "${getTodayISO()}"。
@@ -2392,52 +2395,161 @@
       const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
       const parsed = safeParseJsonObject(rawText);
 
-      let items = [];
-      if (Array.isArray(parsed.i)) {
-        items = parsed.i.map(item => {
-          if (Array.isArray(item)) {
-            const cId = item[2] || "food";
-            const parent = getCategoryObj(cId, "expense");
-            const rawSubName = String(item[3] || "");
-            let matchedSub = parent?.subCategories?.find(s => s.name === rawSubName || rawSubName.includes(s.name) || s.name.includes(rawSubName));
-            const subId = matchedSub ? matchedSub.id : (parent?.subCategories?.[0]?.id || "food_other");
-            return { name: String(item[0] || "品目"), price: safeParseInt(item[1]), categoryId: cId, subCategoryId: subId };
-          }
-          return { name: "品目", price: 0, categoryId: "food", subCategoryId: "food_grocery" };
-        }).filter(it => it.price !== 0);
+      // receipts配列、または単一オブジェクト形式の両方に対応
+      const rawList = Array.isArray(parsed.receipts)
+        ? parsed.receipts
+        : (parsed.s || parsed.store || parsed.i ? [parsed] : []);
+
+      if (rawList.length === 0) {
+        throw new Error("レシートの文字を読み取れませんでした");
       }
 
-      let receiptTotal = safeParseInt(parsed.t !== undefined ? parsed.t : parsed.total_amount);
-      const itemsSum = items.reduce((acc, cur) => acc + cur.price, 0);
+      const results = rawList.map((recObj) => {
+        let items = [];
+        if (Array.isArray(recObj.i)) {
+          items = recObj.i.map(item => {
+            if (Array.isArray(item)) {
+              const cId = item[2] || "food";
+              const parent = getCategoryObj(cId, "expense");
+              const rawSubName = String(item[3] || "");
+              let matchedSub = parent?.subCategories?.find(s => s.name === rawSubName || rawSubName.includes(s.name) || s.name.includes(rawSubName));
+              const subId = matchedSub ? matchedSub.id : (parent?.subCategories?.[0]?.id || "food_other");
+              return { name: String(item[0] || "品目"), price: safeParseInt(item[1]), categoryId: cId, subCategoryId: subId };
+            }
+            return { name: "品目", price: 0, categoryId: "food", subCategoryId: "food_grocery" };
+          }).filter(it => it.price !== 0);
+        }
 
-      if (receiptTotal <= 0 && itemsSum > 0) receiptTotal = itemsSum;
+        let receiptTotal = safeParseInt(recObj.t !== undefined ? recObj.t : recObj.total_amount);
+        const itemsSum = items.reduce((acc, cur) => acc + cur.price, 0);
 
-      if (receiptTotal > 0 && items.length > 0 && receiptTotal !== itemsSum) {
-        const diff = receiptTotal - itemsSum;
-        const mainCat = items[0]?.categoryId || "food";
-        const mainSub = items[0]?.subCategoryId || "food_grocery";
-        const label = diff > 0 ? "外税・差額調整" : "値引・差額調整";
-        items.push({ name: label, price: diff, categoryId: mainCat, subCategoryId: mainSub });
-      } else if (receiptTotal > 0 && items.length === 0) {
-        items.push({ name: parsed.s || parsed.store || "お買い物", price: receiptTotal, categoryId: "food", subCategoryId: "food_grocery" });
-      }
+        if (receiptTotal <= 0 && itemsSum > 0) receiptTotal = itemsSum;
 
-      const normalizedDate = normalizeReceiptDate(parsed.d || parsed.date, true);
-      const standardized = {
-        store: parsed.s || parsed.store || "不明",
-        phone: parsed.p || parsed.phone || "",
-        date: normalizedDate,
-        total_amount: receiptTotal,
-        items: items,
-        base64Url: "data:image/jpeg;base64," + base64Data,
-        diagText: diagText
-      };
+        if (receiptTotal > 0 && items.length > 0 && receiptTotal !== itemsSum) {
+          const diff = receiptTotal - itemsSum;
+          const mainCat = items[0]?.categoryId || "food";
+          const mainSub = items[0]?.subCategoryId || "food_grocery";
+          const label = diff > 0 ? "外税・差額調整" : "値引・差額調整";
+          items.push({ name: label, price: diff, categoryId: mainCat, subCategoryId: mainSub });
+        } else if (receiptTotal > 0 && items.length === 0) {
+          items.push({ name: recObj.s || recObj.store || "お買い物", price: receiptTotal, categoryId: "food", subCategoryId: "food_grocery" });
+        }
 
-      standardized.duplicateMatch = findDuplicateRecord(standardized);
-      return standardized;
+        const normalizedDate = normalizeReceiptDate(recObj.d || recObj.date, true);
+        const standardized = {
+          store: recObj.s || recObj.store || "不明",
+          phone: recObj.p || recObj.phone || "",
+          date: normalizedDate,
+          total_amount: receiptTotal,
+          items: items,
+          base64Url: "data:image/jpeg;base64," + base64Data,
+          diagText: diagText
+        };
+        standardized.duplicateMatch = findDuplicateRecord(standardized);
+        return standardized;
+      });
+
+      return results;
     }
 
     async function handleReceiptUpload(event) {
+      const files = Array.from(event.target.files || []);
+      if (files.length === 0) return;
+
+      const rawKey = appConfig.geminiApiKey || localStorage.getItem('gemini_api_key') || "";
+      const apiKey = rawKey.trim();
+      if (!apiKey) {
+        showToast("設定タブでGemini APIキーを登録してください", true);
+        switchTab("settings");
+        event.target.value = "";
+        return;
+      }
+
+      // 1枚撮影・1枚選択の場合（中に2枚以上写っていれば自動で一括画面へ切り替え）
+      if (files.length === 1) {
+        setAiLoading(true, "AIレシート解析中...", "画像内のレシートをすべて検出・認識しています");
+        try {
+          const extractedList = await analyzeReceiptFileMulti(files[0], apiKey);
+
+          if (extractedList.length === 1) {
+            const resData = extractedList[0];
+            attachedImageBase64 = resData.base64Url;
+            document.getElementById("attached-image-thumb").src = attachedImageBase64;
+            document.getElementById("attached-image-preview-box").classList.remove("hidden");
+
+            pendingScanResult = resData;
+            showScannedReceiptModal(resData, resData.diagText);
+          } else {
+            // ★ 1枚の写真から2枚以上のレシートが見つかった場合
+            batchScanQueue = extractedList.map(item => {
+              item.checked = !item.duplicateMatch;
+              return item;
+            });
+            const curPayName = getPaymentName(document.getElementById("form-payment-method").value);
+            const curTags = parseTagsInput(document.getElementById("form-tags").value).join(" ") || "タグなし";
+            document.getElementById("batch-apply-settings-label").textContent = `${curPayName} / ${curTags}`;
+            document.getElementById("batch-progress-status").textContent = `1枚の写真から ${extractedList.length}件のレシートを検出しました！`;
+            document.getElementById("batch-progress-count").textContent = `${extractedList.length}件検出`;
+            document.getElementById("batch-progress-bar").style.width = "100%";
+
+            renderBatchResultsList();
+            updateBatchSaveButtonState();
+            openModal("batch-scan-modal");
+          }
+        } catch (err) {
+          console.error(err);
+          if (err.message === "RATE_LIMIT") {
+            showToast("無料枠の上限に達しました。少し待って再試行してください", true);
+          } else {
+            alert(`解析失敗:\n${err.message}`);
+            showToast("解析失敗: 写真を再度確認してください", true);
+          }
+        } finally {
+          setAiLoading(false);
+          event.target.value = "";
+        }
+        return;
+      }
+
+      // 複数ファイル選択の場合（各ファイル内の複数レシートもすべて展開）
+      batchScanQueue = [];
+      const totalFiles = files.length;
+      const curPayName = getPaymentName(document.getElementById("form-payment-method").value);
+      const curTags = parseTagsInput(document.getElementById("form-tags").value).join(" ") || "タグなし";
+      document.getElementById("batch-apply-settings-label").textContent = `${curPayName} / ${curTags}`;
+
+      document.getElementById("batch-results-list").innerHTML = "";
+      document.getElementById("batch-save-all-btn").disabled = true;
+      document.getElementById("batch-save-btn-label").textContent = "解析完了をお待ちください...";
+      document.getElementById("batch-progress-status").textContent = "連続AI解析を実行中...";
+      document.getElementById("batch-progress-count").textContent = `0 / ${totalFiles}枚`;
+      document.getElementById("batch-progress-bar").style.width = "0%";
+      openModal("batch-scan-modal");
+
+      for (let idx = 0; idx < totalFiles; idx++) {
+        document.getElementById("batch-progress-status").textContent = `${idx + 1}枚目の画像を読み取り中...`;
+        try {
+          const itemList = await analyzeReceiptFileMulti(files[idx], apiKey);
+          itemList.forEach(itemData => {
+            itemData.checked = !itemData.duplicateMatch;
+            batchScanQueue.push(itemData);
+          });
+        } catch (err) {
+          batchScanQueue.push({
+            error: err.message === "RATE_LIMIT" ? "API回数制限に達しました" : `読み取り失敗 (${err.message})`,
+            checked: false
+          });
+        }
+        const pct = Math.round(((idx + 1) / totalFiles) * 100);
+        document.getElementById("batch-progress-count").textContent = `${idx + 1} / ${totalFiles}枚`;
+        document.getElementById("batch-progress-bar").style.width = `${pct}%`;
+        renderBatchResultsList();
+      }
+
+      document.getElementById("batch-progress-status").textContent = `解析完了（合計 ${batchScanQueue.filter(x => !x.error).length}件のレシートを検出）`;
+      updateBatchSaveButtonState();
+      event.target.value = "";
+    } {
       const files = Array.from(event.target.files || []);
       if (files.length === 0) return;
 
