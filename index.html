@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v3.2</title>
+  <title>家計簿 v3.3</title>
 
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
@@ -50,7 +50,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.2</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.3</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -121,7 +121,6 @@
           <button id="type-income-btn" onclick="setInputType('income')" class="py-2 text-center font-bold text-xs rounded-lg text-slate-600 transition">収入</button>
         </div>
 
-        <!-- ★ AIレシート読取バナー（「カメラ撮影」と「複数画像選択」を分離） -->
         <div id="receipt-scan-banner" class="bg-gradient-to-r from-teal-700 to-emerald-600 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between gap-2">
           <div class="flex items-center space-x-2.5 min-w-0">
             <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0">
@@ -133,9 +132,7 @@
             </div>
           </div>
 
-          <!-- カメラ直接起動用input -->
           <input type="file" id="receipt-camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
-          <!-- アルバム・複数選択用input -->
           <input type="file" id="receipt-gallery-input" accept="image/*" multiple class="hidden" onchange="handleReceiptUpload(event)">
 
           <div class="flex items-center space-x-1.5 shrink-0">
@@ -150,10 +147,7 @@
           </div>
         </div>
 
-        <!-- 入力フォーム本体 -->
         <div id="form-card-container" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-          
-          <!-- 連続入力ロックバー -->
           <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-xl border border-slate-200/80">
             <div class="flex items-center space-x-2">
               <i id="lock-icon" class="fa-solid fa-lock-open text-slate-400 text-xs"></i>
@@ -313,7 +307,6 @@
           </button>
         </div>
 
-        <!-- 詳細検索パネル -->
         <div id="history-search-panel" class="hidden bg-white p-3.5 rounded-2xl shadow-md border border-teal-200 space-y-3 text-xs">
           <div class="flex items-center justify-between border-b border-slate-100 pb-2">
             <div class="font-bold text-teal-800 flex items-center space-x-1.5">
@@ -520,23 +513,44 @@
 
       <!-- 4. 設定 タブ -->
       <section id="tab-settings" class="p-4 space-y-4 hidden fade-in">
+        <!-- ★ スプレッドシート自動バックアップ ＆ 直接復元カード -->
         <div class="bg-gradient-to-br from-teal-800 to-slate-800 text-white p-4 rounded-2xl shadow-md space-y-3 border border-teal-600">
           <div class="flex items-center space-x-2">
             <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-sm font-black">
               <i class="fa-solid fa-cloud-arrow-up"></i>
             </div>
             <div>
-              <div class="text-sm font-black tracking-tight">スプレッドシート自動バックアップ</div>
-              <div class="text-[10px] text-teal-200">Google Apps Script (GAS) 連携</div>
+              <div class="text-sm font-black tracking-tight">スプレッドシート自動連携・復元</div>
+              <div class="text-[10px] text-teal-200">Google Apps Script (GAS) 双方向同期</div>
             </div>
           </div>
           <p class="text-[11px] text-slate-200 leading-relaxed">
-            発行したGASのWebアプリURLを登録すると、家計簿を保存するたびに裏で自分専用のスプレッドシートへ自動追記されます。
+            登録したGASのWebアプリURLへ自動でバックアップし、必要な時はシートから直接データを呼び戻せます。
           </p>
           <input type="text" id="setting-gas-url" autocomplete="off" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 text-xs bg-slate-900/60 border border-teal-500/50 rounded-xl font-mono text-white placeholder-slate-400">
           <div class="flex space-x-2">
             <button type="button" onclick="saveGasUrl()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition">URLを保存</button>
             <button type="button" onclick="testGasConnection()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-teal-200 text-xs font-bold rounded-xl transition">テスト送信</button>
+          </div>
+
+          <!-- ★ 新設：シートからの直接復元エリア -->
+          <div class="pt-3 border-t border-teal-600/50 space-y-2">
+            <div class="text-xs font-bold text-emerald-300 flex items-center space-x-1.5">
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+              <span>スプレッドシートからデータを直接復元</span>
+            </div>
+            <p class="text-[10px] text-slate-300 leading-snug">
+              期間を指定して取り込めます（空欄のまま押すと全期間を取り込み、重複は自動スキップします）。
+            </p>
+            <div class="flex items-center space-x-1.5 text-slate-800">
+              <input type="date" id="restore-date-from" class="flex-1 px-2 py-1.5 bg-white rounded-lg text-[11px] font-bold">
+              <span class="text-slate-300 text-xs">〜</span>
+              <input type="date" id="restore-date-to" class="flex-1 px-2 py-1.5 bg-white rounded-lg text-[11px] font-bold">
+            </div>
+            <button type="button" onclick="restoreFromGas()" class="w-full py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>シートからデータを読み込んで復元する</span>
+            </button>
           </div>
         </div>
 
@@ -745,7 +759,6 @@
       </div>
     </div>
 
-    <!-- 複数枚まとめて一括スキャン＆一括保存モーダル -->
     <div id="batch-scan-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[90vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -784,7 +797,6 @@
       </div>
     </div>
 
-    <!-- 明細詳細・クイックタグ付け＆フル編集モーダル -->
     <div id="detail-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[88vh] flex flex-col space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -804,7 +816,6 @@
       </div>
     </div>
 
-    <!-- カテゴリ管理モーダル -->
     <div id="category-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[88vh]">
         <div class="flex items-center justify-between border-b pb-2">
@@ -825,7 +836,6 @@
       </div>
     </div>
 
-    <!-- 大項目編集モーダル -->
     <div id="category-edit-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -852,7 +862,6 @@
       </div>
     </div>
 
-    <!-- 中項目編集モーダル -->
     <div id="subcat-edit-modal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-xs z-60 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -872,7 +881,6 @@
       </div>
     </div>
 
-    <!-- 支払い元管理モーダル -->
     <div id="payment-manage-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col space-y-3 max-h-[85vh]">
         <div class="flex items-center justify-between border-b pb-2">
@@ -887,7 +895,6 @@
       </div>
     </div>
 
-    <!-- 固定費追加モーダル -->
     <div id="fixed-expense-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
         <div class="flex items-center justify-between border-b pb-2">
@@ -919,7 +926,6 @@
       </div>
     </div>
 
-    <!-- 汎用確認ダイアログ -->
     <div id="confirm-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-60 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl space-y-3 text-center">
         <div id="confirm-icon" class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
@@ -932,7 +938,6 @@
       </div>
     </div>
 
-    <!-- 集計対象フラグの説明モーダル -->
     <div id="inclusion-help-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3">
         <div class="flex items-center justify-between border-b pb-2">
@@ -957,7 +962,6 @@
       </div>
     </div>
 
-    <!-- AI処理中ローディングモーダル -->
     <div id="ai-loading-modal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white px-6">
       <div class="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full animate-spin mb-3"></div>
       <div id="ai-loading-title" class="text-sm font-bold mb-1">AI処理中...</div>
@@ -965,7 +969,6 @@
       <p id="ai-loading-desc" class="text-xs text-slate-300 text-center leading-relaxed"></p>
     </div>
 
-    <!-- トースト通知 -->
     <div id="toast" class="hidden absolute top-14 left-1/2 -translate-x-1/2 z-60 bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center space-x-2">
       <i id="toast-icon" class="fa-solid fa-circle-check text-teal-400"></i>
       <span id="toast-msg">保存しました</span>
@@ -2187,17 +2190,156 @@
         inclusionScope: "always",
         tags: ["#テスト"],
         memo: "連携テスト明細です",
-        items: [{ name: "テスト品目", price: 100, categoryId: "その他", subCategoryId: "その他" }]
+        items: [{ name: "テスト品目", price: 100, categoryId: "food", subCategoryId: "food_grocery" }]
       };
       sendRecordToGas(testRecord);
       showToast("スプレッドシートへテスト送信を行いました！シート側をご確認ください");
     }
 
+    // ==========================================
+    // ★ スプレッドシート（GAS doGet）からの直接データ復元機能
+    // ==========================================
+    async function restoreFromGas() {
+      const gasUrl = (document.getElementById("setting-gas-url").value || appConfig.gasBackupUrl || "").trim();
+      if (!gasUrl || !gasUrl.startsWith("http")) {
+        showToast("先にGASのWebアプリURLを入力・保存してください", true);
+        return;
+      }
+
+      const dFrom = document.getElementById("restore-date-from").value || "";
+      const dTo = document.getElementById("restore-date-to").value || "";
+
+      const params = new URLSearchParams();
+      if (dFrom) params.append("dateFrom", dFrom);
+      if (dTo) params.append("dateTo", dTo);
+
+      const separator = gasUrl.includes("?") ? "&" : "?";
+      const fetchUrl = params.toString() ? `${gasUrl}${separator}${params.toString()}` : gasUrl;
+
+      setAiLoading(true, "スプレッドシートから復元中...", "シートの明細データを読み込んでいます");
+
+      try {
+        const response = await fetch(fetchUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+
+        if (json.status !== "success" || !Array.isArray(json.rows)) {
+          throw new Error(json.message || "スプレッドシートのデータ形式が正しくありません（GAS側のdoGet再デプロイをご確認ください）");
+        }
+
+        const rows = json.rows;
+        if (rows.length === 0) {
+          showToast("指定された期間に該当するデータがありませんでした", true);
+          return;
+        }
+
+        // 「登録日時 + 購入日 + 店舗名 + 支払元」をキーに1枚のレシート（スプリット明細）へ再統合
+        const groupedMap = new Map();
+        rows.forEach((r, idx) => {
+          const normDate = normalizeReceiptDate(r.date, false);
+          const groupKey = r.registeredAt
+            ? `${r.registeredAt}_${normDate}_${r.store}_${r.paymentMethod}`
+            : `manual_${normDate}_${r.store}_${r.paymentMethod}_${idx}`;
+
+          if (!groupedMap.has(groupKey)) {
+            groupedMap.set(groupKey, {
+              gasSyncKey: groupKey,
+              date: normDate,
+              type: r.type === "income" ? "income" : "expense",
+              store: r.store || "お買い物",
+              paymentMethod: r.paymentMethod || "cash",
+              inclusionScope: r.inclusionScope || "always",
+              tags: parseTagsInput(r.tags),
+              memo: r.memo || "",
+              totalAmount: 0,
+              items: []
+            });
+          }
+
+          const recObj = groupedMap.get(groupKey);
+          const price = safeParseInt(r.price);
+          const catObj = getCategoryObj(r.categoryId, recObj.type);
+          const validCatId = catObj ? catObj.id : (recObj.type === "income" ? "salary" : "food");
+          const validSubId = (catObj?.subCategories || []).some(s => s.id === r.subCategoryId)
+            ? r.subCategoryId
+            : (catObj?.subCategories?.[0]?.id || "");
+
+          recObj.items.push({
+            id: `it_${recObj.items.length + 1}`,
+            name: r.itemName || recObj.store,
+            price: price,
+            categoryId: validCatId,
+            subCategoryId: validSubId
+          });
+          recObj.totalAmount += price;
+        });
+
+        let restoredCount = 0;
+        let skippedCount = 0;
+        const newlyRestored = [];
+
+        groupedMap.forEach((cand) => {
+          if (cand.totalAmount <= 0) return;
+
+          // 既存データとの二重登録チェック
+          const isAlreadyInApp = records.some(existing => {
+            if (existing.gasSyncKey && existing.gasSyncKey === cand.gasSyncKey) return true;
+            return existing.date === cand.date &&
+                   existing.store === cand.store &&
+                   safeParseInt(existing.totalAmount) === cand.totalAmount;
+          });
+
+          if (isAlreadyInApp) {
+            skippedCount++;
+          } else {
+            newlyRestored.push({
+              id: "gas_" + Date.now() + "_" + restoredCount,
+              gasSyncKey: cand.gasSyncKey,
+              date: cand.date,
+              type: cand.type,
+              store: cand.store,
+              phone: "",
+              paymentMethod: cand.paymentMethod,
+              tags: cand.tags,
+              inclusionScope: cand.inclusionScope,
+              memo: cand.memo,
+              totalAmount: cand.totalAmount,
+              items: cand.items,
+              receiptImageId: null
+            });
+            restoredCount++;
+          }
+        });
+
+        if (restoredCount > 0) {
+          records = newlyRestored.concat(records);
+          // 日付降順にソート
+          records.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+          saveAllStorage();
+          updateTagFilterDropdown();
+          renderDashboard();
+          renderHistoryList();
+          showToast(`${restoredCount}件の明細を復元しました！（重複スキップ: ${skippedCount}件）`);
+          switchTab("history");
+        } else {
+          showToast(`新しいデータはありませんでした（既存と重複: ${skippedCount}件）`);
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert(`スプレッドシート復元エラー:\n${err.message}`);
+        showToast("復元に失敗しました。GASの再デプロイ状況をご確認ください", true);
+      } finally {
+        setAiLoading(false);
+      }
+    }
+
+    // ==========================================
+    // レシート解析（単一・複数一括）
+    // ==========================================
     async function analyzeSingleReceiptFile(file, apiKey) {
-      const t0 = performance.now();
       const base64Data = await compressReceiptImage(file, 1024);
       const kbSize = Math.round((base64Data.length * 3) / 4 / 1024);
-      const t1 = performance.now();
 
       const curYear = new Date().getFullYear();
       const catCatalog = (categories.expense || []).map(c => {
@@ -3586,7 +3728,7 @@
     }
 
     function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "3.2", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      const full = { app: "KakeiboPWA", version: "3.3", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
       downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
       showToast("完全バックアップJSONを出力しました");
     }
