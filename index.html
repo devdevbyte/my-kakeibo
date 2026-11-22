@@ -763,36 +763,36 @@
       </div>
     </div>
 
-    <div id="batch-scan-modal" class="hidden absolute inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl max-h-[90vh] flex flex-col space-y-3">
-        <div class="flex items-center justify-between border-b pb-2">
+  <div id="batch-scan-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-4 pb-6 shadow-2xl max-h-[82dvh] flex flex-col space-y-2.5 overflow-hidden">
+        <div class="flex items-center justify-between border-b pb-2 shrink-0">
           <div class="flex items-center space-x-2 text-teal-800 font-bold text-sm">
             <i class="fa-solid fa-layer-group text-base"></i>
             <span>複数レシート一括処理</span>
           </div>
-          <button onclick="closeModal('batch-scan-modal')" class="text-slate-400 hover:text-slate-600">
+          <button onclick="closeModal('batch-scan-modal')" class="text-slate-400 hover:text-slate-600 p-1">
             <i class="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
 
-        <div id="batch-progress-box" class="bg-teal-50 p-3 rounded-xl border border-teal-200 space-y-1.5">
+        <div id="batch-progress-box" class="bg-teal-50 p-2.5 rounded-xl border border-teal-200 space-y-1 shrink-0">
           <div class="flex justify-between text-xs font-bold text-teal-800">
             <span id="batch-progress-status">解析中...</span>
             <span id="batch-progress-count">0 / 0枚</span>
           </div>
-          <div class="w-full bg-teal-200/60 rounded-full h-2 overflow-hidden">
-            <div id="batch-progress-bar" class="bg-teal-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+          <div class="w-full bg-teal-200/60 rounded-full h-1.5 overflow-hidden">
+            <div id="batch-progress-bar" class="bg-teal-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
 
-        <div class="text-[10px] text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center justify-between">
+        <div class="text-[10px] text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center justify-between shrink-0">
           <span>保存時の設定: <strong id="batch-apply-settings-label" class="text-slate-700"></strong></span>
-          <span class="text-rose-500 font-bold">重複は自動チェック解除済</span>
+          <span class="text-rose-500 font-bold">重複は自動解除済</span>
         </div>
 
-        <div id="batch-results-list" class="overflow-y-auto flex-1 pr-1 space-y-2 text-xs"></div>
+        <div id="batch-results-list" class="overflow-y-auto overscroll-contain flex-1 min-h-0 pr-1 space-y-2 text-xs"></div>
 
-        <div class="pt-2 border-t border-slate-100">
+        <div class="pt-2 border-t border-slate-100 shrink-0 bg-white">
           <button type="button" id="batch-save-all-btn" onclick="saveBatchSelectedRecords()" disabled class="w-full py-3.5 bg-teal-700 disabled:bg-slate-300 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-check-double"></i>
             <span id="batch-save-btn-label">解析完了をお待ちください...</span>
