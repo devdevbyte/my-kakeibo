@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>家計簿 v3.5</title>
+  <title>家計簿 v3.6</title>
 
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
@@ -50,7 +50,7 @@
     <header class="bg-teal-700 text-white px-4 py-3 shadow-sm flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-book-bookmark text-teal-200 text-lg"></i>
-        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.5</span></h1>
+        <h1 class="text-base font-bold tracking-tight">家計簿 <span class="text-[10px] font-normal text-teal-200">v3.6</span></h1>
       </div>
       <div class="flex items-center space-x-2 text-xs">
         <span id="header-cycle-badge" class="bg-teal-800/80 text-teal-100 px-2.5 py-0.5 rounded-full font-medium"></span>
@@ -1930,9 +1930,8 @@
 
         const { res } = await callGeminiAPIWithFallback(apiKey, payload);
         const json = await res.json();
-        let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-        rawText = cleanJsonText(rawText);
-        const parsed = JSON.parse(rawText);
+        const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        const parsed = safeParseJsonObject(rawText);
         if (parsed.storeName) {
           document.getElementById("form-store").value = parsed.storeName;
           showToast(`「${parsed.storeName}」を特定しました！`);
@@ -2390,9 +2389,8 @@
       const outTokens = usage.candidatesTokenCount || 0;
       const diagText = `[診断] モデル:${usedModel} | 通信:${netSec}秒 | 出力:${outTokens} | 画像:${kbSize}KB`;
 
-      let rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-      rawText = cleanJsonText(rawText);
-      const parsed = JSON.parse(rawText);
+      const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+      const parsed = safeParseJsonObject(rawText);
 
       let items = [];
       if (Array.isArray(parsed.i)) {
@@ -2499,7 +2497,7 @@
           batchScanQueue.push(itemData);
         } catch (err) {
           batchScanQueue.push({
-            error: err.message === "RATE_LIMIT" ? "API回数制限に達しました" : "読み取り失敗",
+            error: err.message === "RATE_LIMIT" ? "API回数制限に達しました" : `読み取り失敗 (${err.message})`,
             checked: false
           });
         }
@@ -2522,7 +2520,7 @@
         const card = document.createElement("div");
         if (item.error) {
           card.className = "p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-center justify-between";
-          card.innerHTML = `<span>#${idx + 1}: ${escapeHtml(item.error)}</span>`;
+          card.innerHTML = `<span class="text-[11px]">#${idx + 1}: ${escapeHtml(item.error)}</span>`;
           listEl.appendChild(card);
           return;
         }
@@ -2648,16 +2646,57 @@
       switchTab("history");
     }
 
+    // ★ 文字列リテラル対応・最初の完全なJSONオブジェクト抽出関数
     function cleanJsonText(text) {
       if (!text) return "{}";
-      let cleaned = text.trim();
-      cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "");
-      const firstBrace = cleaned.indexOf("{");
-      const lastBrace = cleaned.lastIndexOf("}");
-      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+      let cleaned = String(text).trim();
+      cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+
+      const start = cleaned.indexOf("{");
+      if (start === -1) return "{}";
+
+      let depth = 0;
+      let inString = false;
+      let escapeNext = false;
+
+      for (let i = start; i < cleaned.length; i++) {
+        const ch = cleaned[i];
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+        if (ch === "\\") {
+          escapeNext = true;
+          continue;
+        }
+        if (ch === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (!inString) {
+          if (ch === "{") depth++;
+          else if (ch === "}") {
+            depth--;
+            if (depth === 0) {
+              return cleaned.slice(start, i + 1);
+            }
+          }
+        }
       }
-      return cleaned;
+      return cleaned.slice(start);
+    }
+
+    function safeParseJsonObject(rawText) {
+      const extracted = cleanJsonText(rawText);
+      try {
+        return JSON.parse(extracted);
+      } catch (e) {
+        const lastEnd = extracted.lastIndexOf("}");
+        if (lastEnd !== -1) {
+          return JSON.parse(extracted.slice(0, lastEnd + 1));
+        }
+        throw e;
+      }
     }
 
     async function callGeminiAPIWithFallback(apiKey, payload) {
@@ -3415,7 +3454,6 @@
       if (drilldownChartInstance) drilldownChartInstance.destroy();
     }
 
-    // ★ 中項目タップで該当明細へ直接ジャンプする関数
     function jumpToSubCategoryHistory(catId, subCatId) {
       const cycle = getCycleRange(viewingDate, appConfig);
       const isYear = analyticsSubTab === "year";
@@ -3426,7 +3464,6 @@
 
       switchTab("history");
 
-      // 検索条件をセット
       document.getElementById("search-type").value = "expense";
       document.getElementById("search-scope").value = "always";
       document.getElementById("search-date-from").value = dateFrom;
@@ -3443,7 +3480,6 @@
       onSearchParentCatChange();
       document.getElementById("search-cat-sub").value = subCatId;
 
-      // 検索パネルを開いた状態にして絞り込み結果を表示
       if (!isSearchPanelOpen) {
         isSearchPanelOpen = true;
         document.getElementById("history-search-panel").classList.remove("hidden");
@@ -3831,7 +3867,7 @@
     }
 
     function exportFullBackupJSON() {
-      const full = { app: "KakeiboPWA", version: "3.5", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
+      const full = { app: "KakeiboPWA", version: "3.6", exportDate: new Date().toISOString(), config: appConfig, categories, paymentMethods, fixedExpenses, records };
       downloadFile(JSON.stringify(full, null, 2), `家計簿_完全バックアップ_${getTodayISO()}.json`, "application/json");
       showToast("完全バックアップJSONを出力しました");
     }
