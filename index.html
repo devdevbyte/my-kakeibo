@@ -763,8 +763,9 @@
       </div>
     </div>
 
-  <div id="batch-scan-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-55 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-2xl p-4 pb-6 shadow-2xl max-h-[82dvh] flex flex-col space-y-2.5 overflow-hidden">
+ 
+    <div id="batch-scan-modal" style="z-index: 9999;" class="hidden fixed inset-0 bg-slate-900/75 flex items-center justify-center p-3">
+      <div style="max-height: 78vh; display: flex; flex-direction: column;" class="bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl space-y-2.5 overflow-hidden">
         <div class="flex items-center justify-between border-b pb-2 shrink-0">
           <div class="flex items-center space-x-2 text-teal-800 font-bold text-sm">
             <i class="fa-solid fa-layer-group text-base"></i>
@@ -785,19 +786,19 @@
           </div>
         </div>
 
-        <div class="text-[10px] text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center justify-between shrink-0">
-          <span>保存時の設定: <strong id="batch-apply-settings-label" class="text-slate-700"></strong></span>
-          <span class="text-rose-500 font-bold">重複は自動解除済</span>
-        </div>
-
-        <div id="batch-results-list" class="overflow-y-auto overscroll-contain flex-1 min-h-0 pr-1 space-y-2 text-xs"></div>
-
-        <div class="pt-2 border-t border-slate-100 shrink-0 bg-white">
-          <button type="button" id="batch-save-all-btn" onclick="saveBatchSelectedRecords()" disabled class="w-full py-3.5 bg-teal-700 disabled:bg-slate-300 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
+        <div class="shrink-0">
+          <button type="button" id="batch-save-all-btn" onclick="saveBatchSelectedRecords()" disabled class="w-full py-3 bg-teal-700 disabled:bg-slate-300 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-check-double"></i>
             <span id="batch-save-btn-label">解析完了をお待ちください...</span>
           </button>
         </div>
+
+        <div class="text-[10px] text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 flex items-center justify-between shrink-0">
+          <span>設定: <strong id="batch-apply-settings-label" class="text-slate-700"></strong></span>
+          <span class="text-rose-500 font-bold">重複は自動解除済</span>
+        </div>
+
+        <div id="batch-results-list" style="overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; min-height: 80px;" class="pr-1 space-y-2 text-xs"></div>
       </div>
     </div>
 
